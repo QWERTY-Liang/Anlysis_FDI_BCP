@@ -5,15 +5,19 @@ cd('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis');
 
 exp.name            = 'TL';
 
-exp.behpath           = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\EMG_bahivour'];
-exp.database          = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Liang_EEGraw']
-exp.filepath          = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\preprocessed_data'];
-
+exp.behpath           = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\EMG_bahivour\'];
+exp.database          = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Liang_EEGraw\']
+exp.filepath          = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\preprocessed_data\'];
+exp.plotpath          = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\plots\'];
 
 exp.nsub              = length(exp.sub_id);
 exp.fs                = 512 % AFTER downsampling
 
+%% behaviour parameter
+exp.blocknum=8;
+exp.trialnum=128;
 
+%% EEG parameter
 % External channel info 
 exp.chan.veog1 = 129; 
 exp.chan.veog2 = 130; 
@@ -25,7 +29,7 @@ exp.chan.emgl1 = 135;
 exp.chan.emgl2 = 136; 
 
 exp.nEEGchans = 128;
-exp.nchans = 136; % Last channel is empty; 
+exp.nchans = 137; % Last channel is empty; 
 
 exp.eegChans = [1:128];
 exp.eogChans = [129,130,131,132];

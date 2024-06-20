@@ -1,0 +1,25 @@
+%%--------------------------------------------------------------------------------------------
+%%  1. Bahivour analysis script
+% Author: Liang Tong
+% Date: 19/6/2024
+%%
+clc
+clear
+addpath('G:\My Drive\Phd\EEGLAB\eeglab-develop');% EEGlab toolbox
+addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis'));% current folder
+
+%% Set experimental analysis parameters
+%exp.sub_id = [1,2,3,4,5,6];
+exp.sub_id = [1];
+[exp] = TLBF1_setup(exp);
+
+%% append all behaviour data for R/ feature analysis
+% requiured output
+% the behavioural data matrix should contain one row for each trial
+% col 1: subject num
+% col 2: block num
+% col 3: condition (different conditions)
+% col 4: muscle (12=FDI, 1122=BCP)
+% col 5: trial outcome (1=correct, 0=error, 2=no response)
+% col 6: RT in sec
+
