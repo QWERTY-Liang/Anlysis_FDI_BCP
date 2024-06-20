@@ -1,0 +1,50 @@
+---
+title: "FDI_BCP_behavioal analysis"
+author: "Liang"
+date: today
+format: html
+editor: visual
+---
+
+## Intro
+
+load the behavioural data matrix should contain one row for each trial
+
+col 1: subject num
+
+col 2: block num
+
+col 3: contrast (high or low contrast)
+
+col 4: muscle (1=FDI, 2=BCP)
+
+col 5: trial outcome (1=correct, 2=error, 4=no response, 3 too early, 6 slow, 5 wrong muscle)
+
+col 6: RT in sec
+
+col 7: evshowtime =\[\] % 0.2sec additional time after response
+
+col 8: participant response, 1 = left, 2 = right 0= on response
+
+col 9: correct response, 1 = left, 2 = right
+
+col 10: first tilt used for SSVEP
+
+```{r 1}
+FCIBCP_data = read.csv('G:/My Drive/Phd/Stage1/BCPvsFDI/E1data_polit/EMG_bahivour/TL_ALL_ForR.csv')
+library(ggplot2)
+
+```
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
