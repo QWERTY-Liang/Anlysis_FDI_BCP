@@ -6,9 +6,9 @@ format: html
 editor: visual
 ---
 
-## Intro
+# Intro of dataset
 
-load the behavioural data matrix should contain one row for each trial
+load the behavioral data matrix should contain one row for each trial
 
 col 1: subject num
 
@@ -18,7 +18,7 @@ col 3: contrast (high or low contrast)
 
 col 4: muscle (1=FDI, 2=BCP)
 
-col 5: trial outcome (1=correct, 2=error, 4=no response, 3 too early, 6 slow, 5 wrong muscle)
+col 5: trial outcome (**1=correct, 2=error**, 4=no response, 3 too early, **6 slow**, 5 wrong muscle) (3 4 5 can't use)
 
 col 6: RT in sec
 
@@ -31,20 +31,392 @@ col 9: correct response, 1 = left, 2 = right
 col 10: first tilt used for SSVEP
 
 ```{r 1}
-FCIBCP_data = read.csv('G:/My Drive/Phd/Stage1/BCPvsFDI/E1data_polit/EMG_bahivour/TL_ALL_ForR.csv')
+#https://r-graph-gallery.com/220-basic-ggplot2-histogram.html#binSize
 library(ggplot2)
+library(dplyr)
+library(hrbrthemes)
+library(viridis)
+#https://statsandr.com/blog/anova-in-r/
+library(palmerpenguins)# for ANOVA
+#https://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.html
+library(data.table)# for large dataset
 
+data = read.csv('G:/My Drive/Phd/Stage1/BCPvsFDI/E1data_polit/EMG_bahivour/TL_ALL_ForR.csv')
+
+# convert to data table format, good for large size
+DT <- as.data.table(data)
+```
+
+# Analysis chain
+
+-   (slow) correct vs (slow) wrong: C / W / SC / SW
+
+Globle
+
+-   Accuracy : \_Acc
+
+-   Reaction time: \_RT
+
+Variable
+
+-   FDI vs BCP : FDI / BCP
+
+-   contract level: Easy(0.14) / Hard(0.07)
+
+-   Hand : Left / Right
+
+individual different
+
+-   different subject: \_sub1...6
+
+-   different block: \_blo1...8
+
+# RT Analysis \_RT
+
+## FDI Vs BCP（Hypo: BCP faster than FDI）
+
+### Overall
+
+RT difference between BCP and FDI
+
+plot histgram (no observious difference)
+
+**!!!not normlized, can't show the difference**
+
+```{r}
+#extract data
+FDI_RT <- DT[muscle_used=="1" ]$rt
+BCP_RT <- DT[muscle_used=="2" ]$rt
+
+
+# Build dataset to plot
+data_FDIBCP_RT <- data.frame(
+  type = c( rep("FDI", length(FDI_RT)), rep("BCP", length(BCP_RT)) ),
+  value = c( FDI_RT, BCP_RT )
+)
+
+# Represent it
+p <- data_FDIBCP_RT %>%
+  ggplot( aes(x=value, fill=type)) +
+    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    scale_fill_manual(values=c("#69b3a2", "#404080")) +
+    theme_ipsum() +
+    labs(fill="")+
+    xlim(c(0, 2))
+
+p
+```
+
+quick check using a t-test
+
+!! There's significance difference
+
+```{r}
+t.test(FDI_RT, BCP_RT)
+```
+
+boxplot
+
+```{r}
+# Plot
+data_FDIBCP_RT %>%
+  ggplot( aes(x=type, y=value, fill=type)) +
+    geom_boxplot() +
+    scale_fill_viridis(discrete = TRUE, alpha=0.6) +
+    geom_jitter(color="black", size=0.4, alpha=0.9) +
+    theme_ipsum() +
+    theme(
+      legend.position="none",
+      plot.title = element_text(size=11)
+    ) +
+    ggtitle("A boxplot with jitter") +
+    xlab("")
+```
+
+###  Correct (C+S)
+
+same when only look at correct trial
+
+```{r}
+#extract data 
+FDI_RT_C <- DT[muscle_used=="1" & respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"] $ rt
+BCP_RT_C <- DT[muscle_used=="2"& respLR == corrLR & perf != "5" &  perf != "3" &  perf != "4"] $ rt
+
+
+# Build dataset to plot
+data_FDIBCP_RT_C <- data.frame(
+  type = c( rep("FDI_C", length(FDI_RT_C)), rep("BCP_C", length(BCP_RT_C)) ),
+  value = c( FDI_RT_C, BCP_RT_C )
+)
+
+# Represent it
+p <- data_FDIBCP_RT_C %>%
+  ggplot( aes(x=value, fill=type)) +
+    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    scale_fill_manual(values=c("#69b3a2", "#404080")) +
+    theme_ipsum() +
+    labs(fill="")+
+    xlim(c(0, 2))
+
+p
+```
+
+run t-test
+
+still significant difference
+
+```{r}
+t.test(FDI_RT_C, BCP_RT_C)
+```
+
+### Wrong (W)
+
+For wrong trial only
+
+```{r}
+#extract data 
+FDI_RT_W <- DT[muscle_used=="1" & respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"] $ rt
+BCP_RT_W <- DT[muscle_used=="2" & respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"] $ rt
+
+
+# Build dataset to plot
+data_FDIBCP_RT_W <- data.frame(
+  type = c( rep("FDI_C", length(FDI_RT_W)), rep("BCP_C", length(BCP_RT_W)) ),
+  value = c( FDI_RT_W, BCP_RT_W )
+)
+
+# Represent it
+p <- data_FDIBCP_RT_W %>%
+  ggplot( aes(x=value, fill=type)) +
+    geom_histogram( binwidth=0.08,color="#e9ecef", alpha=0.6, position = 'identity') +
+    scale_fill_manual(values=c("#69b3a2", "#404080")) +
+    theme_ipsum() +
+    labs(fill="")+
+    xlim(c(0, 2))
+
+p
+```
+
+t-test
+
+still difference in wrong trials
+
+```{r}
+t.test(FDI_RT_W, BCP_RT_W)
+```
+
+### **Proof: BCP is 20-30ms faster than FDI only in correct trials** 
+
+## Contract level E / H (Hypo low slower than high contract)
+
+### Overall
+
+low contrast level has a slower RT
+
+```{r}
+#extract data
+E_RT <- DT[contrast=="0.14"  ]$rt
+H_RT <- DT[contrast=="0.07"  ]$rt
+
+
+# Build dataset to plot
+data_EH_RT <- data.frame(
+  type = c( rep("High contrast", length(E_RT)), rep("Low contrast", length(H_RT)) ),
+  value = c(E_RT, H_RT )
+)
+
+# Represent it
+p <- data_EH_RT %>%
+  ggplot( aes(x=value, fill=type)) +
+    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    scale_fill_manual(values=c("#69b3a2", "#404080")) +
+    theme_ipsum() +
+    labs(fill="")+
+    xlim(c(0, 2))
+
+p
+```
+
+### Correct(C+S)
+
+```{r}
+
+#extract data
+E_RT_C <- DT[contrast=="0.14"& respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4" ]$rt
+H_RT_C <- DT[contrast=="0.07"& respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4" ]$rt
+
+
+# Build dataset to plot
+data_EH_RT_C <- data.frame(
+  type = c( rep("High contrast", length(E_RT_C)), rep("Low contrast", length(H_RT_C)) ),
+  value = c(E_RT_C, H_RT_C )
+)
+
+# Represent it
+p <- data_EH_RT_C %>%
+  ggplot( aes(x=value, fill=type)) +
+    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    scale_fill_manual(values=c("#69b3a2", "#404080")) +
+    theme_ipsum() +
+    labs(fill="")+
+    xlim(c(0, 2))
+
+p
 ```
 
 ```{r}
-1 + 1
+t.test(E_RT_C, H_RT_C)
 ```
 
-You can add options to executable code like this
+### Wrong (W)
 
 ```{r}
-#| echo: false
-2 * 2
+#extract data
+E_RT_W <- DT[contrast=="0.14"& respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4" ]$rt
+H_RT_W <- DT[contrast=="0.07"& respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4" ]$rt
+
+
+# Build dataset to plot
+data_EH_RT_W <- data.frame(
+  type = c( rep("High contrast", length(E_RT_W)), rep("Low contrast", length(H_RT_W)) ),
+  value = c(E_RT_W, H_RT_W )
+)
+
+# Represent it
+p <- data_EH_RT_W %>%
+  ggplot( aes(x=value, fill=type)) +
+    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    scale_fill_manual(values=c("#69b3a2", "#404080")) +
+    theme_ipsum() +
+    labs(fill="")+
+    xlim(c(0, 2))
+
+p
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+```{r}
+
+t.test(E_RT_W, H_RT_W)
+```
+
+### Proof: Low(Hard) slower RT , more symmetric, High(Easy) more left screw; 
+
+## Left/Right hand L/R (Hypo left hand slower)
+
+### Overall
+
+```{r}
+#extract data
+L_RT <- DT[respLR=="1"  ]$rt#left hand
+R_RT <- DT[respLR=="2"  ]$rt
+
+
+# Build dataset to plot
+data_LR_RT <- data.frame(
+  type = c( rep("Left hand", length(L_RT)), rep("Right hand", length(R_RT)) ),
+  value = c(L_RT, R_RT )
+)
+
+# Represent it
+p <- data_LR_RT %>%
+  ggplot( aes(x=value, fill=type)) +
+    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    scale_fill_manual(values=c("#69b3a2", "#404080")) +
+    theme_ipsum() +
+    labs(fill="")+
+    xlim(c(0, 2))
+
+p
+```
+
+**left is around 80ms slower than right (all right hand user)**
+
+```{r}
+t.test(L_RT, R_RT)
+```
+
+### Correct(C+S)
+
+```{r}
+#extract data
+L_RT_C <- DT[respLR=="1" & respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"  ]$rt#left hand
+R_RT_C <- DT[respLR=="2" & respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"  ]$rt
+
+
+# Build dataset to plot
+data_LR_RT_C <- data.frame(
+  type = c( rep("Left hand", length(L_RT_C)), rep("Right hand", length(R_RT_C)) ),
+  value = c(L_RT_C, R_RT_C )
+)
+
+# Represent it
+p <- data_LR_RT_C %>%
+  ggplot( aes(x=value, fill=type)) +
+    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    scale_fill_manual(values=c("#69b3a2", "#404080")) +
+    theme_ipsum() +
+    labs(fill="")+
+    xlim(c(0, 2))
+
+p
+```
+
+For correct 45ms right hand faster!!
+
+```{r}
+t.test(L_RT_C, R_RT_C)
+```
+
+### Wrong (W)
+
+```{r}
+#extract data
+L_RT_W <- DT[respLR=="1" & respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"  ]$rt#left hand
+R_RT_W <- DT[respLR=="2" & respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"  ]$rt
+
+
+# Build dataset to plot
+data_LR_RT_W <- data.frame(
+  type = c( rep("Left hand", length(L_RT_W)), rep("Right hand", length(R_RT_W)) ),
+  value = c(L_RT_W, R_RT_W )
+)
+
+# Represent it
+p <- data_LR_RT_W %>%
+  ggplot( aes(x=value, fill=type)) +
+    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    scale_fill_manual(values=c("#69b3a2", "#404080")) +
+    theme_ipsum() +
+    labs(fill="")+
+    xlim(c(0, 2))
+
+p
+```
+
+For wrong trial 120ms left hand slower
+
+```{r}
+t.test(L_RT_W, R_RT_W)
+```
+
+## Summary
+
+-   hist is not normalized, need to find a better plot
+
+-   correct RT is faster than Wrong RT
+
+-   BCP is 20-30ms faster than FDI only in correct trials
+
+-   Low(Hard) slower RT , more symmetric, High(Easy) more left screw;
+
+-   left is around 80ms (45 correct 120 for wrong) slower than right response (all right hand user)
+
+# Accuracy analysis
+
+correct / wrong+ correct =77%
+
+```{r}
+#extract data
+FDI_RT_W <- FCIBCP_DT[muscle_used=="1" & respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"] $ rt
+BCP_RT_W <- FCIBCP_DT[muscle_used=="2" & respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"] $ rt
+```
