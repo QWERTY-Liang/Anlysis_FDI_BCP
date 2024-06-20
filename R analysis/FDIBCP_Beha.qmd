@@ -71,6 +71,98 @@ individual different
 
 -   different block: \_blo1...8
 
+# Accuracy analysis \_ACC
+
+## FDI Vs BCP（Hypo: BCP lower acc than FDI. cuz CoM）
+
+no clear difference in acc between FDI and BCP
+
+```{r}
+#extract data
+FDI_C <- DT[muscle_used=="1",
+                     sum( (respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+BCP_C <- DT[muscle_used=="2",
+                     sum( (respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+FDI_W <- DT[muscle_used=="1",
+                     sum( (respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+BCP_W <- DT[muscle_used=="2",
+                     sum( (respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+FDI_Acc <- FDI_C/(FDI_C+FDI_W)
+BCP_Acc <- BCP_C/(BCP_C+BCP_W)
+
+print('FDI acc is:')
+FDI_Acc
+print('BCP acc is:')
+BCP_Acc
+
+```
+
+## Contract level E / H (Hypo Easy has higher ACC)
+
+proved
+
+```{r}
+#extract data
+E_C <- DT[contrast=="0.14" , #easy correct
+                     sum( (respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+H_C <- DT[contrast=="0.07" , #hard correct
+                     sum( (respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+E_W <- DT[contrast=="0.14" , #easy wrong
+                     sum( (respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+H_W <- DT[muscle_used=="2", #hard Wrong
+                     sum( (respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+E_Acc <- E_C/(E_C+E_W)
+H_Acc <- H_C/(H_C+H_W)
+
+print('Easy acc is:')
+E_Acc
+print('Hard acc is:')
+H_Acc
+```
+
+## Left/Right hand L/R (Hypo left hand acc lower)
+
+all right handed; no big difference
+
+```{r}
+#extract data
+L_C <- DT[respLR=="1" , #Left correct
+                     sum( (respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+R_C <- DT[respLR=="2" , #right correct
+                     sum( (respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+L_W <- DT[respLR=="1" , #left wrong
+                     sum( (respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+R_W <- DT[muscle_used=="2", #right Wrong
+                     sum( (respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
+
+L_Acc <- L_C/(L_C+L_W)
+R_Acc <- R_C/(R_C+R_W)
+
+print('Left acc is:')
+L_Acc
+print('Right acc is:')
+R_Acc
+```
+
+## Summary
+
+-   no clear difference in acc between FDI and BCP 82%
+
+-   Easy has higher ACC 89% vs 80%
+
+-   no clear difference in acc between left and right hand 82%
+
 # RT Analysis \_RT
 
 ## FDI Vs BCP（Hypo: BCP faster than FDI）
@@ -133,7 +225,7 @@ data_FDIBCP_RT %>%
     xlab("")
 ```
 
-###  Correct (C+S)
+### Correct (C+S)
 
 same when only look at correct trial
 
@@ -205,7 +297,7 @@ still difference in wrong trials
 t.test(FDI_RT_W, BCP_RT_W)
 ```
 
-### **Proof: BCP is 20-30ms faster than FDI only in correct trials** 
+### **Proof: BCP is 20-30ms faster than FDI only in correct trials**
 
 ## Contract level E / H (Hypo low slower than high contract)
 
@@ -299,7 +391,7 @@ p
 t.test(E_RT_W, H_RT_W)
 ```
 
-### Proof: Low(Hard) slower RT , more symmetric, High(Easy) more left screw; 
+### Proof: Low(Hard) slower RT , more symmetric, High(Easy) more left screw;
 
 ## Left/Right hand L/R (Hypo left hand slower)
 
@@ -401,7 +493,7 @@ t.test(L_RT_W, R_RT_W)
 
 ## Summary
 
--   hist is not normalized, need to find a better plot
+-   hist is not normalized, need to find a better plot (CDF??)
 
 -   correct RT is faster than Wrong RT
 
@@ -410,13 +502,3 @@ t.test(L_RT_W, R_RT_W)
 -   Low(Hard) slower RT , more symmetric, High(Easy) more left screw;
 
 -   left is around 80ms (45 correct 120 for wrong) slower than right response (all right hand user)
-
-# Accuracy analysis
-
-correct / wrong+ correct =77%
-
-```{r}
-#extract data
-FDI_RT_W <- FCIBCP_DT[muscle_used=="1" & respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"] $ rt
-BCP_RT_W <- FCIBCP_DT[muscle_used=="2" & respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"] $ rt
-```
