@@ -1,0 +1,64 @@
+function simdat = simul_2AFCddm(pmvar,pmfix,Sel,N,seed)
+% simulates single-trial behavioural data for a linear-collapse DDM, given parameters
+% pm, and number of trials in each condition given by vector N (one number for each condition)
+% written for data of Janik Wiese's project 2022/23 - assumes 4 coherences of specific values and certain RT deadline 1.5 sec 
+
+maxRT = 1.5; % time beyond which no RTs are recorded by the task. (note here it's also the deadline subjects are aiming to meet; in other experiments these are different things - e.g. in Kelly et al 2021 deadline could be e.g. 380 ms but all RTs up to about 1.6 sec are still recorded and analysed maxR would be 1.6, not 0.38 in that case)
+cohlevels = [6 14 26 48];
+
+% The full parameter vector pm for this model is as follows:
+% tnd = nondecision time
+% d(1) = drift rate for coherence level 1
+% d(2) = drift rate for coherence level 2
+% d(3) = drift rate for coherence level 3
+% d(4) = drift rate for coherence level 4
+% b = boundary height (separation = twice that) at time=0. UPPER BOUND IS CORRECT (convention)
+% y = slope of bound collapse in units of /sec
+
+% Assemble parameter vector:
+pm = zeros(1,length(Sel));
+pm(Sel==1) = pmvar; % Sel vector indicates which parameters are free to vary in the fit.
+pm(Sel==0) = pmfix;
+% The reason pm is broken into pmvar (free) and pmfix in the input and then reassembled here, is that the search
+% algorithm requires just the free parameters pvar to be entered to define the parameter space
+
+[tnd,d,b,y] = deal(pm(1),pm(2:5),pm(6),pm(7));
+
+% Now if only d(1) is designated as free, we will take that to mean the other drift rates scale directly from that:
+if all(Sel(2:5)==[1 0 0 0])
+    d(2)=cohlevels(2)/cohlevels(1)*d(1);
+    d(3)=cohlevels(3)/cohlevels(1)*d(1);
+    d(4)=cohlevels(4)/cohlevels(1)*d(1);
+end
+% if N is just one number, assume that is the requested number of trials for each condition
+if length(N)==1, N = ones(1,4)*N; end
+
+rng(seed) % the reason a random number generator seed is fed in is because otherwise, since we are generating predicted data using monte carlo simualtion, even the same parameter vector will produce different predicted data and hence G^2 on different runs, which would surely trip up the search algorithm.
+
+s = 0.1 ; % gaussian noise /sec
+dt = 0.002; % time step in sec. Don't want too crude, but too fine and the computation time will be more than necessary.
+
+k=0; % trial counter
+for c=1:4 % condition
+    for n=1:N(c)
+        k=k+1;
+        % record condition and initialize:
+        cond(k,1) = c; RT(k,1) = nan; CH(k,1) = nan;
+        % simulate trial
+        DV1=0; % start decision variable at 0 (unbiased)
+        % For convenience we can assume for fitting behaviour only that all non-decision time is before the accumulator starts
+        for t=tnd:dt:maxRT    % only simulate up to max 1.5 sec because that's the hard deadline in this task, anything later is a miss
+            DV1 = DV1 + d(c)*dt + s*randn*sqrt(dt);    % note d and s are scaled by dt and square root of dt, which is the convention
+            bnd = b-y*t; % collapsing bound value at time t
+            if DV1>bnd | DV1<-bnd
+                RT(k,1) = t; 
+                CH(k,1) = (DV1>bnd); % CHoice: 1=correct, 0=error
+                break; 
+            end
+        end
+        % if no repsonse, must be a miss
+        if isnan(RT(k)), CH(k,1) = 2; end
+    end
+end
+
+simdat = [cond CH RT]; % assemble the simulated data in standard format

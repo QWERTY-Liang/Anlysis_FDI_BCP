@@ -1,9 +1,17 @@
 ---
 title: "FDI_BCP_behavioal analysis"
-author: "Liang"
+author: "Liang Tong"
 date: today
-format: html
+format: 
+  revealjs: 
+    slide-number: true
 editor: visual
+execute: 
+  eval: true
+  echo: false
+  warning: false
+  message: false
+fontsize: 19pt
 ---
 
 # Intro of dataset
@@ -50,6 +58,7 @@ DT <- as.data.table(data)
 # Analysis chain
 
 -   (slow) correct vs (slow) wrong: C / W / SC / SW
+-   **different RT lock ? \<0.8/ 0.6-1.8/1.5-2**
 
 Globle
 
@@ -67,9 +76,9 @@ Variable
 
 individual different
 
--   different subject: \_sub1...6
+-   **different subject: \_sub1...6**
 
--   different block: \_blo1...8
+-   **different block: \_blo1...8**
 
 # Accuracy analysis \_ACC
 
@@ -167,7 +176,7 @@ R_Acc
 
 ## FDI Vs BCP（Hypo: BCP faster than FDI）
 
-### Overall
+## Overall
 
 RT difference between BCP and FDI
 
@@ -176,9 +185,9 @@ plot histgram (no observious difference)
 **!!!not normlized, can't show the difference**
 
 ```{r}
-#extract data
-FDI_RT <- DT[muscle_used=="1" ]$rt
-BCP_RT <- DT[muscle_used=="2" ]$rt
+#extract data 
+FDI_RT <- DT[muscle_used=="1"  ]$rt
+BCP_RT <- DT[muscle_used=="2"  ]$rt
 
 
 # Build dataset to plot
@@ -225,7 +234,7 @@ data_FDIBCP_RT %>%
     xlab("")
 ```
 
-### Correct (C+S)
+## Correct (C+S)
 
 same when only look at correct trial
 
@@ -261,7 +270,7 @@ still significant difference
 t.test(FDI_RT_C, BCP_RT_C)
 ```
 
-### Wrong (W)
+## Wrong (W)
 
 For wrong trial only
 
@@ -297,11 +306,11 @@ still difference in wrong trials
 t.test(FDI_RT_W, BCP_RT_W)
 ```
 
-### **Proof: BCP is 20-30ms faster than FDI only in correct trials**
+## **Proof: BCP is 20-30ms faster than FDI only in correct trials**
 
 ## Contract level E / H (Hypo low slower than high contract)
 
-### Overall
+## Overall
 
 low contrast level has a slower RT
 
@@ -329,7 +338,7 @@ p <- data_EH_RT %>%
 p
 ```
 
-### Correct(C+S)
+## Correct(C+S)
 
 ```{r}
 
@@ -360,7 +369,7 @@ p
 t.test(E_RT_C, H_RT_C)
 ```
 
-### Wrong (W)
+## Wrong (W)
 
 ```{r}
 #extract data
@@ -391,11 +400,11 @@ p
 t.test(E_RT_W, H_RT_W)
 ```
 
-### Proof: Low(Hard) slower RT , more symmetric, High(Easy) more left screw;
+## Proof: Low(Hard) slower RT , more symmetric, High(Easy) more left screw;
 
 ## Left/Right hand L/R (Hypo left hand slower)
 
-### Overall
+## Overall
 
 ```{r}
 #extract data
@@ -427,7 +436,7 @@ p
 t.test(L_RT, R_RT)
 ```
 
-### Correct(C+S)
+## Correct(C+S)
 
 ```{r}
 #extract data
@@ -459,7 +468,7 @@ For correct 45ms right hand faster!!
 t.test(L_RT_C, R_RT_C)
 ```
 
-### Wrong (W)
+## Wrong (W)
 
 ```{r}
 #extract data

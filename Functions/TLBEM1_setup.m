@@ -80,32 +80,32 @@ exp.upthresh = 150;
 
 
 for el = 1:length(exp.cppChans)
-    thisCh = exp.cppChans(el)
-    exp.cppIdx(el) = find(strcmp({chanlocs.labels}, thisCh))
+    thisCh = exp.cppChans(el);
+    exp.cppIdx(el) = find(strcmp({chanlocs.labels}, thisCh));
 end
 
 for el = 1:length(exp.cppCentral)
-    thisCh = exp.cppCentral(el)
-    exp.cppCentralIdx(el) = find(strcmp({chanlocs.labels}, thisCh))
+    thisCh = exp.cppCentral(el);
+    exp.cppCentralIdx(el) = find(strcmp({chanlocs.labels}, thisCh));
 end
 
 for el = 1:length(exp.cppParietal)
-    thisCh = exp.cppParietal(el)
-    exp.cppParietalIdx(el) = find(strcmp({chanlocs.labels}, thisCh))
+    thisCh = exp.cppParietal(el);
+    exp.cppParietalIdx(el) = find(strcmp({chanlocs.labels}, thisCh));
 end
 
 for el = 1:length(exp.cnvChans)
-    thisCh = exp.cnvChans(el)
-    exp.cnvIdx(el) = find(strcmp({chanlocs.labels}, thisCh))
+    thisCh = exp.cnvChans(el);
+    exp.cnvIdx(el) = find(strcmp({chanlocs.labels}, thisCh));
 end
 
 for el = 1:length(exp.MBLChans)
-    thisCh = exp.MBLChans(el)
-    exp.MBLIdx(el) = find(strcmp({chanlocs.labels}, thisCh))
+    thisCh = exp.MBLChans(el);
+    exp.MBLIdx(el) = find(strcmp({chanlocs.labels}, thisCh));
 end
 
 
 for el = 1:length(exp.MBRChans)
-    thisCh = exp.MBRChans(el)
-    exp.MBRIdx(el) = find(strcmp({chanlocs.labels}, thisCh))
+    thisCh = exp.MBRChans(el);
+    exp.MBRIdx(el) = find(strcmp({chanlocs.labels}, thisCh));
 end
