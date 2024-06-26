@@ -14,6 +14,14 @@ execute:
 fontsize: 19pt
 ---
 
+# To update list
+
+1.  median response time for each participant & condition
+
+2.  liner maxed effect models (Omer?)
+
+3.  contract/muscle/Participant 不同
+
 # Intro of dataset
 
 load the behavioral data matrix should contain one row for each trial
