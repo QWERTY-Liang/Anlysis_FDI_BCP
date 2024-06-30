@@ -37,4 +37,5 @@ TLB1_AllBehaviour(exp);
 % one .mt file include totEMG
 % at EMG raw path
 %%
+% then modeling DDM, change the drift rate/boundary
 

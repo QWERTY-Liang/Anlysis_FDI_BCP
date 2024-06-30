@@ -120,7 +120,7 @@ for e =1:2
 end
 
 
-%% STEP 6: run ICA and remove eye movement components 
+%% STEP 5: run ICA and remove eye movement components 
 % In this step, we run an Independent Component Analysis to identify eye
 % movements (blinks and saccades).
 
@@ -163,30 +163,12 @@ end
 for e = 1:2
     epoch = exp.epochs{e}
     for sub = exp.sub_id(1:end)
-        % if strcmp(epoch,'SL')
-        %     EEG = pop_loadset([exp.filepath 'ri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
-        % elseif strcmp(epoch, 'RL')
+        if strcmp(epoch,'SL')
             EEG = pop_loadset([exp.filepath 'ri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
-        % end
+        elseif strcmp(epoch, 'RL')
+            EEG = pop_loadset([exp.filepath 'ri' epoch '_' exp.filterLab 'aac' exp.name '_P' num2str(sub) '.set']);
+        end
         TLBF2_runICA(sub,exp, EEG);   
-    end
-end
-
-%% STEP 6.5: (optional):  remove eye movement components (using ICA lable plugin)
-
-% bug fixed: last 4 channel dropped (ICAlable evalc 被注释掉)
-
-
-for e = 1:2
-    epoch = exp.epochs{e}
-    for sub = exp.sub_id(1:end)
-        % if strcmp(epoch,'SL')
-        %     EEG = pop_loadset([exp.filepath 'ri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
-        % elseif strcmp(epoch, 'RL')
-            EEG = pop_loadset([exp.filepath 'ICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
-        % end
-        TLBF2_lableICA(sub,exp,EEG);
- 
     end
 end
 
