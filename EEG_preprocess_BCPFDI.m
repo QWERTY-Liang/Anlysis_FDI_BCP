@@ -225,12 +225,22 @@ for e = 1:2
     end
 end
 
-%% STEP 7: CSD filtering 
+%% STEP 8: CSD filtering 
 % Relying on CSD toolbox (https://psychophysiology.cpmc.columbia.edu/software/csdtoolbox/)
 % Final step: Apply CSD transformation to the data 
-for sub = exp.sub_id(1:end)
-   TLBF2_applyCSD(sub,exp, 'prePulse', 'P1') 
+for e = 1:2
+    epoch = exp.epochs{e};
+    for sub = exp.sub_id(1:end)
+
+         EEG = pop_loadset([exp.filepath 'ab_cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
+        TLBF2_applyCSD(sub,exp, EEG)
+         EEG1 = pop_loadset([exp.filepath 'abb_cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
+        TLBF2_applyCSD(sub,exp, EEG1)
+
+
+    end
 end
 
+%% STEP 9: Morlet - wavelet transform 
 
 

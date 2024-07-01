@@ -1,4 +1,4 @@
-function [] = TLBF2_applyCSD(sub,exp, baseline, epoch)
+function [] = TLBF2_applyCSD(sub,exp, EEG)
 
 %Relies on CSD toolbox
 %See https://psychophysiology.cpmc.columbia.edu/software/csdtoolbox/tutorial.html
@@ -11,7 +11,7 @@ function [] = TLBF2_applyCSD(sub,exp, baseline, epoch)
 % end
 
 %Load CSD transform
-load('CSD_coords_biosemi128.mat');
+load('CSDfile_128_4.mat');
 % TO DO: check that these coordinates are obtained using the right lambda
 % and m parameters - see tutorial. 
 
@@ -62,7 +62,7 @@ toc();
 EEG.data(1:128,:,:) = X;
 
 EEG = eeg_checkset( EEG );
-filename = ['csd_' baseline EEG.filename];
+filename = ['csd_' EEG.filename];
 EEG = pop_saveset( EEG, filename, exp.filepath);
 
 
