@@ -211,7 +211,7 @@ end
 
 for e = 1:2
     epoch = exp.epochs{e};
-    for sub = exp.sub_id(1:end)%:end)
+    for sub = exp.sub_id(3)%:end)%:end)
         % if strcmp(epoch,'SL')
         %     EEG = pop_loadset([exp.filepath 'ri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
         % elseif strcmp(epoch, 'RL')
@@ -230,13 +230,12 @@ end
 % Final step: Apply CSD transformation to the data 
 for e = 1:2
     epoch = exp.epochs{e};
-    for sub = exp.sub_id(1:end)
+    for sub = exp.sub_id(3)%:end)
 
          EEG = pop_loadset([exp.filepath 'ab_cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
         TLBF2_applyCSD(sub,exp, EEG)
          EEG1 = pop_loadset([exp.filepath 'abb_cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
         TLBF2_applyCSD(sub,exp, EEG1)
-
 
     end
 end

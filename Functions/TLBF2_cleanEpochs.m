@@ -29,8 +29,8 @@ EEG.chanlocs(132).labels = 'HEOG2';
 
 EEG1 = pop_eegthresh(EEG, 1, 1:EEG.nbchan,-75 , 75 ,-1.5 , 1, 1, 0);%这里同一【-1 1】秒查看阈值
 my_badtrial=EEG1.reject.rejthreshE;%加的定位坏道信息
-[EEG1,comrej, badlist]= pop_TBT(EEG1,EEG1.reject.rejthreshE,20,0.3,0);%最后一个变成1可检查
-% Max 0.3 bad epochs per channel --badchan-- Proportion (e.g., 0.3) of max bad epochs per channel.
+[EEG1,comrej, badlist]= pop_TBT(EEG1,EEG1.reject.rejthreshE,20,1,0);%最后一个变成1可检查
+% Max 100% bad epochs per channel --badchan-- Proportion (e.g., 0.3) of max bad epochs per channel.
 %Max 20 bad channel per epoch   --badseg - Number of max bad channels per epoch.
 
 %For P1, for example, see correction on  Epoch 14 for ch 95,101
