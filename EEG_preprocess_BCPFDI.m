@@ -189,7 +189,48 @@ for e = 1:2
  
     end
 end
+%% STEP 7: reject all epochs where there are fluctuations >150uV in any channel
+%这一步删掉了一些trial，需后期定位把trial的idx找出来（可从TBT里找例子）
+%这里统一用了0点附近-1.5-1秒区域
+% This is almost the last step! We will now baseline the data before the
+% first pulse, and then do a final cleaning step. 
 
+% For this cleaning step, we are using a toolbox that allows us to
+% interpolate bad channels on a trial-by-trial basis. 
+% The toolbox can cause some problems occasionally
+
+% At the moment, it will ask you to accept the interpolation & trial
+% rejection step. It is a good idea for you to plot the EEG data and the
+% matrices for each participant to see what is being rejected. 
+
+% It will normally always reject the 8 external channels, because they have
+% not been baselined and are always out of bounds - this is OK. We are 
+% keeping the original data. If other channels are being rejected as well, 
+% keep a note of them. 
+
+
+for e = 1:2
+    epoch = exp.epochs{e};
+    for sub = exp.sub_id(1:end)%:end)
+        % if strcmp(epoch,'SL')
+        %     EEG = pop_loadset([exp.filepath 'ri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
+        % elseif strcmp(epoch, 'RL')
+            EEG = pop_loadset([exp.filepath 'cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
+        % end
+         [EEG1 EEG2] = TLBF2_baselineData(sub,exp, EEG, epoch); %Calculate baselines and save in a single data file; by default, subtract pre-Pulse/stlmu for 'SL' per-action for RL
+       %tbt2里面改了，129-136全为坏电极默认，这步后无外接电极
+       %每个人1024有8个trial左右扔掉，可以更严格
+         TLBF2_cleanEpochs(sub,exp,EEG1); % Threshold; remove epochs with > 150uV drifts in any channel
+       TLBF2_cleanEpochs(sub,exp,EEG2);
+    end
+end
+
+%% STEP 7: CSD filtering 
+% Relying on CSD toolbox (https://psychophysiology.cpmc.columbia.edu/software/csdtoolbox/)
+% Final step: Apply CSD transformation to the data 
+for sub = exp.sub_id(1:end)
+   TLBF2_applyCSD(sub,exp, 'prePulse', 'P1') 
+end
 
 
 

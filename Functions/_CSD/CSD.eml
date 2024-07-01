@@ -1,0 +1,51 @@
+Received: by 2002:ab2:69cc:0:b0:200:a7b8:6e6a with SMTP id n12csp1634046lqp;
+        Mon, 1 Jul 2024 03:14:33 -0700 (PDT)
+Received: from mail-sor-f41.google.com (mail-sor-f41.google.com. [209.85.220.41])
+        by mx.google.com with SMTPS id 41be03b00d2f7-727490746ebsor3253789a12.5.2024.07.01.03.14.33
+        for <liang.tong2@ucdconnect.ie>
+        (Google Transport Security);
+        Mon, 01 Jul 2024 03:14:33 -0700 (PDT)
+From: Kieran Mohr <kiemohr@gmail.com>
+To: Liang Tong <liang.tong2@ucdconnect.ie>
+Subject: CSD
+Thread-Topic: CSD
+Thread-Index: AWdPckJ6htKpv5/j9NSURlrg9OAIoQ==
+X-MS-Exchange-MessageSentRepresentingType: 1
+Date: Mon, 1 Jul 2024 10:14:21 +0000
+Message-ID:
+	<CA++5uLAyezsQkmL1XknB_kUE4DL92rh4ovwE6AHOxTHhrRaH=g@mail.gmail.com>
+Content-Language: en-GB
+X-MS-Has-Attach:
+X-MS-Exchange-Organization-SCL: -1
+X-MS-TNEF-Correlator:
+X-MS-Exchange-Organization-RecordReviewCfmType: 0
+received-spf: pass (google.com: domain of kiemohr@gmail.com designates
+ 209.85.220.41 as permitted sender) client-ip=209.85.220.41;
+Content-Type: multipart/alternative;
+	boundary="_000_CA5uLAyezsQkmL1XknBkUE4DL92rh4ovwE6AHOxTHhrRaHgmailgmai_"
+MIME-Version: 1.0
+
+--_000_CA5uLAyezsQkmL1XknBkUE4DL92rh4ovwE6AHOxTHhrRaHgmailgmai_
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+
+aHR0cHM6Ly93d3cuc2NpZW5jZWRpcmVjdC5jb20vc2NpZW5jZS9hcnRpY2xlL3BpaS9TMTM4ODI0
+NTcwNTAwMzY4OA0KDQpodHRwczovL3d3dy5zY2llbmNlZGlyZWN0LmNvbS9zY2llbmNlL2FydGlj
+bGUvcGlpL1MwMTY3ODc2MDE1MDAxNjA5I2YwMDQwDQo=
+
+--_000_CA5uLAyezsQkmL1XknBkUE4DL92rh4ovwE6AHOxTHhrRaHgmailgmai_
+Content-Type: text/html; charset="utf-8"
+Content-ID: <9EE641558F95E3469CF2C408EB29FB6A@1>
+Content-Transfer-Encoding: base64
+
+PGh0bWw+DQo8aGVhZD4NCjxtZXRhIGh0dHAtZXF1aXY9IkNvbnRlbnQtVHlwZSIgY29udGVudD0i
+dGV4dC9odG1sOyBjaGFyc2V0PXV0Zi04Ij4NCjwvaGVhZD4NCjxib2R5Pg0KPGRpdiBkaXI9Imx0
+ciI+PGEgaHJlZj0iaHR0cHM6Ly93d3cuc2NpZW5jZWRpcmVjdC5jb20vc2NpZW5jZS9hcnRpY2xl
+L3BpaS9TMTM4ODI0NTcwNTAwMzY4OCI+aHR0cHM6Ly93d3cuc2NpZW5jZWRpcmVjdC5jb20vc2Np
+ZW5jZS9hcnRpY2xlL3BpaS9TMTM4ODI0NTcwNTAwMzY4ODwvYT48YnI+DQo8ZGl2Pjxicj4NCjwv
+ZGl2Pg0KPGRpdj48YSBocmVmPSJodHRwczovL3d3dy5zY2llbmNlZGlyZWN0LmNvbS9zY2llbmNl
+L2FydGljbGUvcGlpL1MwMTY3ODc2MDE1MDAxNjA5I2YwMDQwIj5odHRwczovL3d3dy5zY2llbmNl
+ZGlyZWN0LmNvbS9zY2llbmNlL2FydGljbGUvcGlpL1MwMTY3ODc2MDE1MDAxNjA5I2YwMDQwPC9h
+Pjxicj4NCjwvZGl2Pg0KPC9kaXY+DQo8L2JvZHk+DQo8L2h0bWw+DQo=
+
+--_000_CA5uLAyezsQkmL1XknBkUE4DL92rh4ovwE6AHOxTHhrRaHgmailgmai_--
