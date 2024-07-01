@@ -31,11 +31,11 @@ EEG1_preStim = EEG1; %EEG2_preStim = EEG2;
 EEG1_prePulse = EEG1; %EEG2_prePulse = EEG2; 
 EEG1_action = EEG1; %EEG2_action = EEG2; 
 
-%% PrePulse baseline (-0.2s before evidence)
+%% PrePulse baseline (-0.18s before evidence 4 times SSVEP)
 %Calculate prePulse baseline - this should neutralise effects of
 %anticipatory build-up
 
-t.prePulse_baseline_idx = ([EEG1.times] >= -200 & [EEG1.times] <= 0);
+t.prePulse_baseline_idx = ([EEG1.times] >= -188 & [EEG1.times] <= 0);
 t.prePulse_baseline = squeeze(mean(EEG1.data(:,t.prePulse_baseline_idx,:),2));
 
 %% Action-locked baseline (all the trial)
@@ -73,7 +73,7 @@ end
 
    % t.lidots_idx = cell2mat([EEG1.epoch(e).eventtype(1,:)]) == '6';
     t.lidots_time = cell2mat([EEG1.epoch(e).eventlatency(1,t.lidots_idx)]);
-    t.preStim_baseline = [t.lidots_time-200, t.lidots_time]; %200ms pre-dot onset
+    t.preStim_baseline = [t.lidots_time-188, t.lidots_time]; %188is 4*SSVEP 21.5Hz
     t.preStim_baseline_idx = ([EEG1.times] >= t.preStim_baseline(1) & [EEG1.times] <= t.preStim_baseline(end));    
     t.preStim_baseline = mean(EEG1.data(:,t.preStim_baseline_idx,e),2);
     

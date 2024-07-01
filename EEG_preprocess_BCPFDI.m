@@ -75,7 +75,7 @@ end
 % participant.
 
 for sub = exp.sub_id(1:end)
-    [EEG1, EEG2] = TLBF2_epochData(sub,exp);  %Epoch around pulse 1 and around response
+    [EEG1, EEG2] = TLBF2_epochData(sub,exp);  %Epoch around evidence and around response
     TLBF2_manualChanCheck(sub,exp,EEG1,EEG2);
     clear EEG1; clear EEG2; close all;
 end
@@ -211,7 +211,7 @@ end
 
 for e = 1:2
     epoch = exp.epochs{e};
-    for sub = exp.sub_id(3)%:end)%:end)
+    for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
         %     EEG = pop_loadset([exp.filepath 'ri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
         % elseif strcmp(epoch, 'RL')
@@ -230,7 +230,7 @@ end
 % Final step: Apply CSD transformation to the data 
 for e = 1:2
     epoch = exp.epochs{e};
-    for sub = exp.sub_id(3)%:end)
+    for sub = exp.sub_id(1:end)
 
          EEG = pop_loadset([exp.filepath 'ab_cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
         TLBF2_applyCSD(sub,exp, EEG)

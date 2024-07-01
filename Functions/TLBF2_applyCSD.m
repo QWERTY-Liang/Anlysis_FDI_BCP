@@ -63,7 +63,7 @@ EEG.data(1:128,:,:) = X;
 
 EEG = eeg_checkset( EEG );
 filename = ['csd_' EEG.filename];
-EEG = pop_saveset( EEG, filename, exp.filepath);
+EEG = pop_saveset( EEG, filename, exp.finalpath );
 
 
 

@@ -9,6 +9,7 @@ exp.behpath           = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\EMG_bahiv
 exp.database          = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Liang_EEGraw\']
 exp.filepath          = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\preprocessed_data\'];
 exp.plotpath          = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\plots\'];
+exp.finalpath          = ['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\finial_data\'];
 
 exp.nsub              = length(exp.sub_id);
 exp.fs                = 512 % AFTER downsampling
@@ -56,7 +57,7 @@ exp.trigg.response = 10; exp.respEpoch= [-2, 1];
 exp.epochs = {'SL', 'RL'};
 
 % ICA channels
-exp.icaChans = [1:132];
+exp.icaChans = [1:128];
 % Plotting parameters 
 load chanlocsBioSemi_128_EOG4_Liang
 
