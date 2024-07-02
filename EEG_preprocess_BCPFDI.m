@@ -1,6 +1,7 @@
 %%--------------------------------------------------------------------------------------------
 %to-update list
 %1. in annotate data, update trial ID and Meta data
+%2. 眨眼段标记去除
 
 %%  2. EEG analysis script
 % Author: Liang Tong

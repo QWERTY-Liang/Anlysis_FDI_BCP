@@ -1,0 +1,34 @@
+%%  3. EEG sortintg and plot
+% Author: Liang Tong
+% Date: 2/7/2024 
+
+%% Toolbox requirements: 
+
+clc
+clear
+addpath('G:\My Drive\Phd\EEGLAB\eeglab-develop');% EEGlab toolbox
+addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis'));% current folder
+
+%% Set experimental analysis parameters
+exp.sub_id = [1,2,3,4,5,6];
+%exp.sub_id = [1];
+[exp] = TLBEM1_setup(exp);
+
+%% Run analysis
+eeglab
+
+
+%% combining all data set
+addpath(genpath(exp.finalpath));
+load TL_ALL_include_EMG.mat% 包含所有行为数据包括EMG
+
+for sub = exp.sub_id(1:end)
+    epoch = exp.epochs{e};
+    for sub = exp.sub_id(1:end)
+        [exp.finalpath 'ab_cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.mat']
+
+    end
+end
+
+%% Sorting
+

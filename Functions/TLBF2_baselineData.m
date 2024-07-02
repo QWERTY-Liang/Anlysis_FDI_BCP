@@ -109,7 +109,7 @@ EEG2 = eeg_checkset( EEG2);
 %By default, subtract:
 if default(1)=='S'
         EEG1.data = EEG1_prePulse.data; %证据前0.2秒
-        EEG2.data = EEG1_preStim.data;% 刺激前0.2秒
+        EEG2.data = EEG1_preStim.data;% cue前0.2秒
 elseif default(1)=='R'
         EEG1.data =  EEG1_action.data;% 整段平均
         EEG2.data =  EEG1_preStim.data;%结束前0.2秒%后期调整为EMG更准确的时间
