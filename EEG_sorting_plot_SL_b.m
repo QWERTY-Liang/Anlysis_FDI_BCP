@@ -120,36 +120,47 @@ end
 % cue前0.188秒 col:12
 % 整段平均 col:13
 % response 前0.188秒 col:14
-
-
+addpath(genpath(exp.finalpath));
+ EEG = pop_loadset([exp.finalpath 'SL_bTLalldata.set']);
+ load TL_AllBehaviour_SL_b.mat 
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3.1 correct vs wrong
 % Define the selected trials vector
 channel_to_plot = 19;
 
-selected_trials_correct = zeros(length(AllBehaviour_SL_b),1);  % example vector
-selected_trials_wrong = zeros(length(AllBehaviour_SL_b),1);  % example vector
-
-for i=1:length(AllBehaviour_SL_b)
-
-    if AllBehaviour_SL_b(i,8)==AllBehaviour_SL_b(i,9)
-        selected_trials_correct(i)=1;
-    elseif AllBehaviour_SL_b(i,8)~=AllBehaviour_SL_b(i,9)
-        selected_trials_wrong(i)=1;
-    end
-end
+selected_trials_1 = zeros(length(AllBehaviour_SL_b),1);  % example vector
+selected_trials_2 = zeros(length(AllBehaviour_SL_b),1);  % example vector
+count=0;
+% switch
+%     case 'CW_SL_b' %correct vs wrong; pre evidence SL
+        for i=1:length(AllBehaviour_SL_b)
+            %select trials
+            if AllBehaviour_SL_b(i,8)==AllBehaviour_SL_b(i,9)
+                selected_trials_1(i)=1;
+            elseif AllBehaviour_SL_b(i,8)~=AllBehaviour_SL_b(i,9)
+                selected_trials_2(i)=1;
+            end
+            %exclude invalide(too early or wrong muscle)
+            if AllBehaviour_SL_b(i,5)==3 || AllBehaviour_SL_b(i,5)==5
+                selected_trials_1(i)=0;%change back to unselected
+                selected_trials_2(i)=0;
+                count=count+1;
+            end
+        end
+% end
 
 % Extract selected trials---for correct
-selected_idx_correct = find(selected_trials_correct == 1);
-EEG_selected_correct = pop_select(EEG, 'trial', selected_idx_correct);
+selected_idx_1 = find(selected_trials_1 == 1);
+EEG_selected_2 = pop_select(EEG, 'trial', selected_idx_1);
 % Compute the ERP
-ERP_correct = mean(EEG_selected_correct.data, 3);  % averaging across the third dimension (trials)
+ERP_correct = mean(EEG_selected_2.data, 3);  % averaging across the third dimension (trials)
 %ERP = mean(EEG_selected.data, 3);  % averaging across the third dimension (trials)
 % Plot the ERP for a specific channel
-time_vector_correct = EEG_selected_correct.times;  % time points from the EEG structure
+time_vector_correct = EEG_selected_2.times;  % time points from the EEG structure
 % channel_to_plot = 19;  % channel number to plot
 
 % Extract selected trials---for wrong
-selected_idx_wrong = find(selected_trials_wrong == 1);
+selected_idx_wrong = find(selected_trials_2 == 1);
 EEG_selected_wrong = pop_select(EEG, 'trial', selected_idx_wrong);
 % Compute the ERP
 ERP_wrong = mean(EEG_selected_wrong.data, 3);  % averaging across the third dimension (trials)
@@ -158,7 +169,7 @@ ERP_wrong = mean(EEG_selected_wrong.data, 3);  % averaging across the third dime
 time_vector_wrong = EEG_selected_wrong.times;  % time points from the EEG structure
 % channel_to_plot = 19;  % channel number to plot
 
-%% plot ERPs
+% plot ERPs
 figure;
 plot(time_vector_correct, ERP_correct(channel_to_plot, :));
 hold on;
@@ -170,7 +181,7 @@ title(['ERP for Channel ', num2str(channel_to_plot)]);
 hold off;
 % Add vertical lines at specified time points
 hold on;
-xline([-1300 -1200, -600, 0, 800, 1500,2000], '--r', {'fix point', 'baseline on', 'cue change', 'evidence on', 'response allowed', 'DDL-1.5s','DDL-2s'});
+xline([-1300 -1200, -600, 0, 800, 1500,2000], '--r', {'fix point', 'baseline on', 'cue change', 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s'});
 hold off;
 
 %% plot scalp plot ----- correct
@@ -178,13 +189,13 @@ num_plots = 10;
 time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
 
 % Find the indices of the defined time points
-time_indices = arrayfun(@(t) find(EEG_selected_correct.times >= t, 1), time_points);
+time_indices = arrayfun(@(t) find(EEG_selected_2.times >= t, 1), time_points);
 
 % Plot scalp topographies
 figure;
 for i = 1:num_plots
     subplot(2, 5, i);  % create a 2x4 subplot
-    topoplot(ERP_correct(:, time_indices(i)), EEG_selected_correct.chanlocs, 'maplimits', [-max(abs(ERP_correct(:))), max(abs(ERP_correct(:)))]);
+    topoplot(ERP_correct(:, time_indices(i)), EEG_selected_2.chanlocs, 'maplimits', [-max(abs(ERP_correct(:))), max(abs(ERP_correct(:)))]);
     title([num2str(time_points(i)), ' ms']);
     colorbar;
 end
@@ -204,34 +215,56 @@ for i = 1:num_plots
     title([num2str(time_points(i)), ' ms']);
     colorbar;
 end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 3.2 FDI vs BCP
 % Define the selected trials vector
 channel_to_plot = 19;
 
-selected_trials_correct = zeros(length(AllBehaviour_SL_b),1);  % example vector
-selected_trials_wrong = zeros(length(AllBehaviour_SL_b),1);  % example vector
+selected_trials_1 = zeros(length(AllBehaviour_SL_b),1);  % example vector
+selected_trials_2 = zeros(length(AllBehaviour_SL_b),1);  % example vector
+count=0;
 
 for i=1:length(AllBehaviour_SL_b)
 
-    if AllBehaviour_SL_b(i,4)==1
-        selected_trials_correct(i)=1;
-    elseif AllBehaviour_SL_b(i,4)~=2
-        selected_trials_wrong(i)=1;
+
+    %FDI and BCP only
+    % if AllBehaviour_SL_b(i,4)==1
+    %     selected_trials_1(i)=1;
+    % elseif AllBehaviour_SL_b(i,4)==2
+    %     selected_trials_2(i)=1;
+    % end
+%%%%%%%%%%%%%%%%%%%%%change here
+    %fdi correct and BCP correct (==) or wrong(~=); high=0.14 low 0.07
+    if AllBehaviour_SL_b(i,4)==1 &&AllBehaviour_SL_b(i,8)~=AllBehaviour_SL_b(i,9)&& AllBehaviour_SL_b(i,3)==0.14
+        selected_trials_1(i)=1;
+    elseif AllBehaviour_SL_b(i,4)==2 &&AllBehaviour_SL_b(i,8)~=AllBehaviour_SL_b(i,9)&& AllBehaviour_SL_b(i,3)==0.14
+        selected_trials_2(i)=1;
+    end
+
+
+    %exclude invalide(too early or wrong muscle)
+    if AllBehaviour_SL_b(i,5)==3 || AllBehaviour_SL_b(i,5)==5
+        selected_trials_1(i)=0;%change back to unselected
+        selected_trials_2(i)=0;
+        count=count+1;
     end
 end
 
 % Extract selected trials---for correct
-selected_idx_correct = find(selected_trials_correct == 1);
-EEG_selected_correct = pop_select(EEG, 'trial', selected_idx_correct);
+selected_idx_1 = find(selected_trials_1 == 1);
+EEG_selected_2 = pop_select(EEG, 'trial', selected_idx_1);
 % Compute the ERP
-ERP_correct = mean(EEG_selected_correct.data, 3);  % averaging across the third dimension (trials)
+ERP_correct = mean(EEG_selected_2.data, 3);  % averaging across the third dimension (trials)
 %ERP = mean(EEG_selected.data, 3);  % averaging across the third dimension (trials)
 % Plot the ERP for a specific channel
-time_vector_correct = EEG_selected_correct.times;  % time points from the EEG structure
+time_vector_correct = EEG_selected_2.times;  % time points from the EEG structure
 % channel_to_plot = 19;  % channel number to plot
 
 % Extract selected trials---for wrong
-selected_idx_wrong = find(selected_trials_wrong == 1);
+selected_idx_wrong = find(selected_trials_2 == 1);
 EEG_selected_wrong = pop_select(EEG, 'trial', selected_idx_wrong);
 % Compute the ERP
 ERP_wrong = mean(EEG_selected_wrong.data, 3);  % averaging across the third dimension (trials)
@@ -240,7 +273,7 @@ ERP_wrong = mean(EEG_selected_wrong.data, 3);  % averaging across the third dime
 time_vector_wrong = EEG_selected_wrong.times;  % time points from the EEG structure
 % channel_to_plot = 19;  % channel number to plot
 
-%% plot ERPs
+% plot ERPs
 figure;
 plot(time_vector_correct, ERP_correct(channel_to_plot, :));
 hold on;
@@ -252,26 +285,120 @@ title(['ERP for Channel ', num2str(channel_to_plot)]);
 hold off;
 % Add vertical lines at specified time points
 hold on;
-xline([-1300 -1200, -600, 0, 800, 1500,2000], '--r', {'fix point', 'baseline on', 'cue change', 'evidence on', 'response allowed', 'DDL-1.5s','DDL-2s'});
+xline([-1300 -1200, -600, 0, 800, 1500,2000], '--r', {'fix point', 'baseline on', 'cue change', 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s'});
 hold off;
 
-%% plot scalp plot ----- correct
+%% plot scalp plot ----- FDI
 num_plots = 10;
-time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
+time_points = linspace(-600, 750, num_plots);  % in milliseconds
 
 % Find the indices of the defined time points
-time_indices = arrayfun(@(t) find(EEG_selected_correct.times >= t, 1), time_points);
+time_indices = arrayfun(@(t) find(EEG_selected_2.times >= t, 1), time_points);
 
 % Plot scalp topographies
 figure;
 for i = 1:num_plots
     subplot(2, 5, i);  % create a 2x4 subplot
-    topoplot(ERP_correct(:, time_indices(i)), EEG_selected_correct.chanlocs, 'maplimits', [-max(abs(ERP_correct(:))), max(abs(ERP_correct(:)))]);
+    topoplot(ERP_correct(:, time_indices(i)), EEG_selected_2.chanlocs, 'maplimits', [-max(abs(ERP_correct(:))), max(abs(ERP_correct(:)))]);
     title([num2str(time_points(i)), ' ms']);
     colorbar;
 end
 
-%% plot scalp plot ----- wrong
+% plot scalp plot ----- BCP
+num_plots = 10;
+time_points = linspace(-600, 750, num_plots);  % in milliseconds
+
+% Find the indices of the defined time points
+time_indices = arrayfun(@(t) find(EEG_selected_wrong.times >= t, 1), time_points);
+
+% Plot scalp topographies
+figure;
+for i = 1:num_plots
+    subplot(2, 5, i);  % create a 2x4 subplot
+    topoplot(ERP_wrong(:, time_indices(i)), EEG_selected_wrong.chanlocs, 'maplimits', [-max(abs(ERP_wrong(:))), max(abs(ERP_wrong(:)))]);
+    title([num2str(time_points(i)), ' ms']);
+    colorbar;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 3.3 high Vs low
+% Define the selected trials vector
+channel_to_plot = 19;
+
+selected_trials_1 = zeros(length(AllBehaviour_SL_b),1);  % example vector
+selected_trials_2 = zeros(length(AllBehaviour_SL_b),1);  % example vector
+count=0;
+
+for i=1:length(AllBehaviour_SL_b)
+
+    if AllBehaviour_SL_b(i,3)==0.14
+        selected_trials_1(i)=1;
+    elseif AllBehaviour_SL_b(i,3)==0.07
+        selected_trials_2(i)=1;
+    end
+
+
+    %exclude invalide(too early or wrong muscle)
+    if AllBehaviour_SL_b(i,5)==3 || AllBehaviour_SL_b(i,5)==5
+        selected_trials_1(i)=0;%change back to unselected
+        selected_trials_2(i)=0;
+        count=count+1;
+    end
+end
+
+% Extract selected trials---for correct
+selected_idx_1 = find(selected_trials_1 == 1);
+EEG_selected_2 = pop_select(EEG, 'trial', selected_idx_1);
+% Compute the ERP
+ERP_correct = mean(EEG_selected_2.data, 3);  % averaging across the third dimension (trials)
+%ERP = mean(EEG_selected.data, 3);  % averaging across the third dimension (trials)
+% Plot the ERP for a specific channel
+time_vector_correct = EEG_selected_2.times;  % time points from the EEG structure
+% channel_to_plot = 19;  % channel number to plot
+
+% Extract selected trials---for wrong
+selected_idx_wrong = find(selected_trials_2 == 1);
+EEG_selected_wrong = pop_select(EEG, 'trial', selected_idx_wrong);
+% Compute the ERP
+ERP_wrong = mean(EEG_selected_wrong.data, 3);  % averaging across the third dimension (trials)
+%ERP = mean(EEG_selected.data, 3);  % averaging across the third dimension (trials)
+% Plot the ERP for a specific channel
+time_vector_wrong = EEG_selected_wrong.times;  % time points from the EEG structure
+% channel_to_plot = 19;  % channel number to plot
+
+% plot ERPs
+figure;
+plot(time_vector_correct, ERP_correct(channel_to_plot, :));
+hold on;
+plot(time_vector_wrong, ERP_wrong(channel_to_plot, :));
+legend('High(0.14)','Low(0.07)')
+xlabel('Time (ms)');
+ylabel('Amplitude (µV)');
+title(['ERP for Channel ', num2str(channel_to_plot)]);
+hold off;
+% Add vertical lines at specified time points
+hold on;
+xline([-1300 -1200, -600, 0, 800, 1500,2000], '--r', {'fix point', 'baseline on', 'cue change', 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s'});
+hold off;
+
+%% plot scalp plot ----- High
+num_plots = 10;
+time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
+
+% Find the indices of the defined time points
+time_indices = arrayfun(@(t) find(EEG_selected_2.times >= t, 1), time_points);
+
+% Plot scalp topographies
+figure;
+for i = 1:num_plots
+    subplot(2, 5, i);  % create a 2x4 subplot
+    topoplot(ERP_correct(:, time_indices(i)), EEG_selected_2.chanlocs, 'maplimits', [-max(abs(ERP_correct(:))), max(abs(ERP_correct(:)))]);
+    title([num2str(time_points(i)), ' ms']);
+    colorbar;
+end
+
+%% plot scalp plot ----- Low
 num_plots = 10;
 time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
 
