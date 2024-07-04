@@ -181,12 +181,12 @@ title(['ERP for Channel ', num2str(channel_to_plot)]);
 hold off;
 % Add vertical lines at specified time points
 hold on;
-xline([-1500, 0, 1000], '--r', {'1.5 before action', 'response time', 'post response'});
+xline([-1500, -230, 0], '--r', {'1.5 before EVoff', 'appx. respT', 'EVoff'});
 hold off;
 
 %% plot scalp plot ----- correct
 num_plots = 10;
-time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
+time_points = linspace(-750, 600, num_plots);  % in milliseconds
 
 % Find the indices of the defined time points
 time_indices = arrayfun(@(t) find(EEG_selected_2.times >= t, 1), time_points);
@@ -202,7 +202,7 @@ end
 
 % plot scalp plot ----- wrong
 num_plots = 10;
-time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
+time_points = linspace(-750, 600, num_plots);  % in milliseconds
 
 % Find the indices of the defined time points
 time_indices = arrayfun(@(t) find(EEG_selected_wrong.times >= t, 1), time_points);
@@ -276,12 +276,12 @@ title(['ERP for Channel ', num2str(channel_to_plot)]);
 hold off;
 % Add vertical lines at specified time points
 hold on;
-xline([-1300 -1200, -600, 0, 800, 1500,2000], '--r', {'fix point', 'baseline on', 'cue change', 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s'});
+xline([-1500, -230, 0], '--r', {'1.5 before EVoff', 'appx. respT', 'EVoff'});
 hold off;
 
 %% plot scalp plot ----- High
 num_plots = 10;
-time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
+time_points = linspace(-750, 600, num_plots);  % in milliseconds
 
 % Find the indices of the defined time points
 time_indices = arrayfun(@(t) find(EEG_selected_2.times >= t, 1), time_points);
@@ -297,7 +297,7 @@ end
 
 % plot scalp plot ----- Low
 num_plots = 10;
-time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
+time_points = linspace(-750, 600, num_plots);  % in milliseconds
 
 % Find the indices of the defined time points
 time_indices = arrayfun(@(t) find(EEG_selected_wrong.times >= t, 1), time_points);
@@ -324,16 +324,16 @@ for i=1:length(AllBehaviour_RL_bb)
 
 
     %FDI and BCP only
-    % if AllBehaviour_SL_bb(i,4)==1
+    % if AllBehaviour_RL_bb(i,4)==1
     %     selected_trials_1(i)=1;
-    % elseif AllBehaviour_SL_bb(i,4)==2
+    % elseif AllBehaviour_RL_bb(i,4)==2
     %     selected_trials_2(i)=1;
     % end
 %%%%%%%%%%%%%%%%%%%%%change here
     %fdi correct and BCP correct (==) or wrong(~=); high=0.14 low 0.07
-    if AllBehaviour_RL_bb(i,4)==1 &&AllBehaviour_RL_bb(i,8)~=AllBehaviour_RL_bb(i,9)&& AllBehaviour_RL_bb(i,3)==0.14
+    if AllBehaviour_RL_bb(i,4)==1 &&AllBehaviour_RL_bb(i,8)~=AllBehaviour_RL_bb(i,9)&& AllBehaviour_RL_bb(i,3)==0.07
         selected_trials_1(i)=1;
-    elseif AllBehaviour_RL_bb(i,4)==2 &&AllBehaviour_RL_bb(i,8)~=AllBehaviour_RL_bb(i,9)&& AllBehaviour_RL_bb(i,3)==0.14
+    elseif AllBehaviour_RL_bb(i,4)==2 &&AllBehaviour_RL_bb(i,8)~=AllBehaviour_RL_bb(i,9)&& AllBehaviour_RL_bb(i,3)==0.07
         selected_trials_2(i)=1;
     end
 
@@ -378,12 +378,12 @@ title(['ERP for Channel ', num2str(channel_to_plot)]);
 hold off;
 % Add vertical lines at specified time points
 hold on;
-xline([-1300 -1200, -600, 0, 800, 1500,2000], '--r', {'fix point', 'baseline on', 'cue change', 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s'});
+xline([-1500, -230, 0], '--r', {'1.5 before EVoff', 'appx. respT', 'EVoff'});
 hold off;
 
 %% plot scalp plot ----- FDI
 num_plots = 10;
-time_points = linspace(-600, 750, num_plots);  % in milliseconds
+time_points = linspace(-750, 600, num_plots);  % in milliseconds
 
 % Find the indices of the defined time points
 time_indices = arrayfun(@(t) find(EEG_selected_2.times >= t, 1), time_points);
@@ -399,7 +399,7 @@ end
 
 % plot scalp plot ----- BCP
 num_plots = 10;
-time_points = linspace(-600, 750, num_plots);  % in milliseconds
+time_points = linspace(-750, 600, num_plots);  % in milliseconds
 
 % Find the indices of the defined time points
 time_indices = arrayfun(@(t) find(EEG_selected_wrong.times >= t, 1), time_points);
