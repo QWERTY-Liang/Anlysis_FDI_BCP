@@ -106,7 +106,7 @@ end
 % Finally, we create a trial structure that contains a list of all relevant
 % experimental factors we may want to group trials by. 
 
-for e =1:2
+for e =2%1:2
     epoch = exp.epochs{e}
     allRej = [];
     for sub = exp.sub_id(1:end)
@@ -161,7 +161,7 @@ end
 % click "Accept" on the pop up menu and save your corrected file by adding
 % a 'c' at the beginning of your original file (e.g. cICAtrial_eyeB...). 
 
-for e = 1:2
+for e = 2%1:2
     epoch = exp.epochs{e}
     for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
@@ -178,7 +178,7 @@ end
 % bug fixed: last 4 channel dropped (ICAlable evalc 被注释掉)
 
 
-for e = 1:2
+for e = 2%1:2
     epoch = exp.epochs{e}
     for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
@@ -210,7 +210,7 @@ end
 % keep a note of them. 
 
 
-for e = 1:2
+for e = 2%1:2
     epoch = exp.epochs{e};
     for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
@@ -229,9 +229,9 @@ end
 %% STEP 8: CSD filtering 
 % Relying on CSD toolbox (https://psychophysiology.cpmc.columbia.edu/software/csdtoolbox/)
 % Final step: Apply CSD transformation to the data 
-for e = 1:2
+for e = 2%1:2
     epoch = exp.epochs{e};
-    for sub = exp.sub_id(1:end)
+    for sub = exp.sub_id(6)%1:end)
 
          EEG = pop_loadset([exp.filepath 'ab_cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
         TLBF2_applyCSD(sub,exp, EEG)

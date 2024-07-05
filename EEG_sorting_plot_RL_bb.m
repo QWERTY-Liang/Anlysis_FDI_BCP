@@ -1,4 +1,4 @@
-%%  3.3 EEG sortintg and plot for pre action -188 RL
+%%  3.3 EEG sortintg and plot for pre cue -188 RL
 % Author: Liang Tong
 % Date: 3/7/2024 
 
@@ -105,7 +105,7 @@ end
     save([exp.finalpath exp.name '_AllBehaviour_RL_bb' ],'AllBehaviour_RL_bb');
 
 
-%% 3. Sorting v%% pre action RL
+%% 3. Sorting v%% pre cue RL
 % col 1: subject num
 % col 2: block num
 % col 3: contrast (high or low contrast)
@@ -182,6 +182,8 @@ hold off;
 % Add vertical lines at specified time points
 hold on;
 xline([-1500, -230, 0], '--r', {'1.5 before EVoff', 'appx. respT', 'EVoff'});
+xlim([-1500,500])
+xlim([-1500,500])
 hold off;
 
 %% plot scalp plot ----- correct
@@ -277,6 +279,8 @@ hold off;
 % Add vertical lines at specified time points
 hold on;
 xline([-1500, -230, 0], '--r', {'1.5 before EVoff', 'appx. respT', 'EVoff'});
+xlim([-1500,500])
+
 hold off;
 
 %% plot scalp plot ----- High
@@ -323,7 +327,7 @@ count=0;
 for i=1:length(AllBehaviour_RL_bb)
 
 
-    %FDI and BCP only
+    % %FDI and BCP only
     % if AllBehaviour_RL_bb(i,4)==1
     %     selected_trials_1(i)=1;
     % elseif AllBehaviour_RL_bb(i,4)==2
@@ -331,9 +335,9 @@ for i=1:length(AllBehaviour_RL_bb)
     % end
 %%%%%%%%%%%%%%%%%%%%%change here
     %fdi correct and BCP correct (==) or wrong(~=); high=0.14 low 0.07
-    if AllBehaviour_RL_bb(i,4)==1 &&AllBehaviour_RL_bb(i,8)~=AllBehaviour_RL_bb(i,9)&& AllBehaviour_RL_bb(i,3)==0.07
+    if AllBehaviour_RL_bb(i,4)==1 &&AllBehaviour_RL_bb(i,8)~=AllBehaviour_RL_bb(i,9)&& AllBehaviour_RL_bb(i,3)==0.14
         selected_trials_1(i)=1;
-    elseif AllBehaviour_RL_bb(i,4)==2 &&AllBehaviour_RL_bb(i,8)~=AllBehaviour_RL_bb(i,9)&& AllBehaviour_RL_bb(i,3)==0.07
+    elseif AllBehaviour_RL_bb(i,4)==2 &&AllBehaviour_RL_bb(i,8)~=AllBehaviour_RL_bb(i,9)&& AllBehaviour_RL_bb(i,3)==0.14
         selected_trials_2(i)=1;
     end
 
@@ -379,6 +383,7 @@ hold off;
 % Add vertical lines at specified time points
 hold on;
 xline([-1500, -230, 0], '--r', {'1.5 before EVoff', 'appx. respT', 'EVoff'});
+xlim([-1500,500])
 hold off;
 
 %% plot scalp plot ----- FDI

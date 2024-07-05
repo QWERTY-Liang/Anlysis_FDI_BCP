@@ -52,7 +52,7 @@ end
 % Stim-locking params
 exp.trigg.SL = {101, 102, 103, 104}; exp.stimEpoch = [-1.5, 3]; % 2s is the max. 
 % Action-locking params 
-exp.trigg.response = 10; exp.respEpoch= [-2, 1];
+exp.trigg.response = 10; exp.respEpoch= [-3.5, 1];
 % Epoch labels
 exp.epochs = {'SL', 'RL'};
 

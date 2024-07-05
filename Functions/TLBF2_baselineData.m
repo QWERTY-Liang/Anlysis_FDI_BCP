@@ -39,9 +39,9 @@ t.prePulse_baseline_idx = ([EEG1.times] >= -188 & [EEG1.times] <= 0);
 t.prePulse_baseline = squeeze(mean(EEG1.data(:,t.prePulse_baseline_idx,:),2));
 
 %% Action-locked baseline (all the trial)
-% if contains(EEG.filename, 'RL')
-    t.actionBaseline_idx = ([EEG1.times] >= -5 & [EEG1.times] <= 5);
-    t.actionBaseline = squeeze(mean(EEG1.data(:,t.actionBaseline_idx,:),2));
+% if contains(EEG.filename, 'RL') %单独找，用pre cue daseline
+    % t.actionBaseline_idx = ([EEG1.times] >= -5 & [EEG1.times] <= 5);
+    % t.actionBaseline = squeeze(mean(EEG1.data(:,t.actionBaseline_idx,:),2));
 % end
 
 %% Pre-stimulus baseline (-200 ms pre cue)
@@ -49,6 +49,9 @@ t.prePulse_baseline = squeeze(mean(EEG1.data(:,t.prePulse_baseline_idx,:),2));
 
 for e = 1:length(EEG1.epoch)
 
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %pres cue的baseline
     %%%%小补丁
 % 假设输入是[EEG1.epoch(e).eventtype(1,:)]
 inputData = [EEG1.epoch(e).eventtype(1,:)];
@@ -68,8 +71,6 @@ for i = 1:length(inputData)
         t.lidots_idx = [t.lidots_idx, i];  % 如果找到目标值，将索引添加到idx数组
     end
 end
-%%%%
-
 
    % t.lidots_idx = cell2mat([EEG1.epoch(e).eventtype(1,:)]) == '6';
     t.lidots_time = cell2mat([EEG1.epoch(e).eventlatency(1,t.lidots_idx)]);
@@ -80,6 +81,40 @@ end
     EEG1.preStim_baseline(:,e) = t.preStim_baseline;
     EEG2.preStim_baseline(:,e) = t.preStim_baseline;
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %pre cue的baseline 为RL单独找
+    % t.actionBaseline_idx = ([EEG1.times] >= -5 & [EEG1.times] <= 5);
+    % t.actionBaseline = squeeze(mean(EEG1.data(:,t.actionBaseline_idx,:),2));
+    %%%%小补丁
+% 假设输入是[EEG1.epoch(e).eventtype(1,:)]
+inputData_RL = [EEG1.epoch(e).eventtype(1,:)];
+
+% 目标值
+
+targetValue_RL = '6';
+
+
+% 查找目标值的位置并存储索引
+t.lidots_idx_RL = [];
+for i = 1:length(inputData_RL)
+    if strcmp(inputData_RL{i}, targetValue)
+        t.lidots_idx_RL = [t.lidots_idx_RL, i];  % 如果找到目标值，将索引添加到idx数组
+    end
+end
+
+   % t.lidots_idx = cell2mat([EEG1.epoch(e).eventtype(1,:)]) == '6';
+    t.lidots_time_RL = cell2mat([EEG1.epoch(e).eventlatency(1,t.lidots_idx_RL)]);
+    t.actionBaseline = [t.lidots_time_RL-188, t.lidots_time_RL]; %188is 4*SSVEP 21.5Hz
+    t.actionBaseline_idx = ([EEG1.times] >= t.actionBaseline(1) & [EEG1.times] <= t.actionBaseline(end));    
+    t.actionBaseline = mean(EEG1.data(:,t.actionBaseline_idx,e),2);
+    
+    EEG1.actionBaseline(:,e) = t.actionBaseline;
+    EEG2.actionBaseline(:,e) = t.actionBaseline;
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %PreStim
     EEG1_preStim.data(:,:,e) = EEG1.data(:,:,e) - t.preStim_baseline; %Baseline data
     %EEG2_preStim.data(:,:,e) = EEG2.data(:,:,e) - t.preStim_baseline; %Baseline data
@@ -89,7 +124,7 @@ end
     %EEG2_prePulse.data(:,:,e) = EEG2.data(:,:,e) - t.prePulse_baseline(:,e); %Baseline data
 
 %     %Action
-    EEG1_action.data(:,:,e) = EEG1.data(:,:,e) - t.actionBaseline(:,e); %Baseline data
+    EEG1_action.data(:,:,e) = EEG1.data(:,:,e) - t.actionBaseline; %Baseline data
     %EEG2_action.data(:,:,e) = EEG2.data(:,:,e) - t.actionBaseline(:,e); %Baseline data
      
 end
@@ -111,8 +146,8 @@ if default(1)=='S'
         EEG1.data = EEG1_prePulse.data; %证据前0.2秒
         EEG2.data = EEG1_preStim.data;% cue前0.2秒
 elseif default(1)=='R'
-        EEG1.data =  EEG1_action.data;% 整段平均
-        EEG2.data =  EEG1_preStim.data;%结束前0.2秒%后期调整为EMG更准确的时间
+        EEG1.data =  EEG1_preStim.data;%结束前0.2秒%后期调整为EMG更准确的时间 %暂时用不到
+        EEG2.data =  EEG1_action.data;% cue前0.2秒
     % case 'action'
     %     EEG1.data = EEG1_action.data;
     %     EEG2.data = EEG2_action.data;
