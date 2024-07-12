@@ -1,106 +1,33 @@
-% This script now goes through each subject and derives average ERPs for relevant conditions of each subject, 
-% and plots the stimulus-locked and response-locked ERPs
+% This script now goes through each subject and derives ERPs by averaging across all the "good" trials for each relevant condition
+% of each subject, and plots the stimulus-locked and response-locked ERPs
 
 clear all
-allsubj = {'P01', 'P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P09', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15', 'P16', 'P17', 'P18', 'P19', 'P20', 'P21', 'P22', 'P23', 'RL01', }; 
+allsubj = {'P01', 'P02', 'P03', 'P04', 'P05', 'P06', 'P07', 'P08', 'P09', 'P10', 'P11', 'P12', 'P13', 'P14', 'P15', 'P16'}; 
 
+% the usual stuff:
 bigmatfolder = 'bigmats/';
 load chanlocsBioSemi128;
 nchan = 128; % number of channels
 next = 8;  % number of externals
-
 fs=1024;
+VEOGchans = [129 130]; 
 
-% Before sorting trials and averaging by condition, we need to figure out what analysis time window and artifact
-% rejection (AR) criteria will give us the best data quality across as many subjects as possible.
-% AR criteria by our very simply threshold method consist simply of a time window in which to check for
-% artifacts, and a threshold level that marks a trial as having an artifact if exceeded within that window.
-% The first thing to consider is blink behaviour because it's the biggest artifact source. If you instructed
-% the subjects well, they will have waited until the stimulus has fully ended or until a good 0.5-1 sec after
-% responding before they get their blink in, but sometimes they blink very quickly and if you set too wide an
-% AR window in this case, loads of trials will be rejected even if the time between stimulus and response is
-% mostly clean. When there are several such subjects in a dataset, it can be best to artifact reject just
-% based on a relatively narrow window from stimulus onset and back from the response - this is what I arrive
-% at below in fact. It is far better to instrct your subjects well than to have to scrape around for trials by
-% adjusting windows like this!
-
-VEOGchans = [129 130]; %  CHECK THAT THESE ARE INDEED YOUR VEOG CHANNELS [upr lwr]
-%%
-% We will now 'draft' some artifact checking settings and see how many trials get rejected, while also looking
-% at the blink behaviour from the VEOG channels
-blinkTh = 100; % threshold for detecting a blink in VEOG upper-lower difference signal
-artifTh = 700; % this is for SCALP channels - it's high because it is in CSD units, which take bigger values
-ARchans = [1:128]; % Artifact rejection channels - which electrodes should we reject based on?
-ARchecklim = [-100 1760]; % in msec, the limits of the time window relative to the event in which you will check for an artifact
-
-blinkTms_all = []; blinkTms_allR = []; % (initialisation) these will contain the times relative to stimulus and to response ('R') at which blinks occurred on the trials
-for s=1:length(allsubj)
-    
-    subjID = allsubj{s};
-    disp([subjID '...'])
-    
-    load([bigmatfolder subjID '_intp'])
-
-    % First analyse blinks. Let's assume most of the time window has eyes-open so the median value will
-    % represent that state, to be used as a baseline:
-    VEOG = squeeze(erp(VEOGchans(1),:,:)-erp(VEOGchans(2),:,:)); % Upper elec minus lower elec; so now it's time x trials
-    VEOG = VEOG - repmat(median(VEOG),[size(VEOG,1),1]); % "subtract the value estimated as the eyes open state, so blinks are seen as deviations from this
-    % now plot VEOG to investigate blinking behaviour:
-    figure; plot(t,VEOG); title(['Subject ' allsubj{s}]) % plot the VEOG waveforms for all trials
-    % For each trial get the time at which the blink threshold is exceeded, to look at the distribution of
-    % times subjects tend to blink:
-    blinkTms=[]; 
-    for n=1:size(VEOG,2), 
-        blnk=find(VEOG(:,n)>blinkTh,1); 
-        if isempty(blnk), blinkTms(n)=nan; else, blinkTms(n)=t(blnk); end; 
-    end; 
-    figure; subplot(1,2,1); hist(blinkTms,[t(1):100:t(end)]); title(['Subj ' allsubj{s} 'S-lock']); subplot(1,2,2); hist(blinkTms-RT*1000,[-1000:100:1000]); title('R-lock')
-    blinkTms_all = [blinkTms_all blinkTms]; % and append to a big vector of blink times to check across all subjects
-    blinkTms_allR = [blinkTms_allR blinkTms-RT*1000];
-    
-    % the following will count up all of the trials with artifacts detected, whether blinks or other noise on
-    % the cap channels:
-    blink = max(abs(VEOG)) > blinkTh; % this will give a logical 1 if this threshold is exceeded on a certain trial, 0 otherwise
-    % and then artifacts on any of the channels specified in ARchans above
-    artcheckwin = find(t>=ARchecklim(1) & t<=ARchecklim(2)); % indices of the timepoints for the artifact check window whose limits (min and max) are defined above
-    art = squeeze(max(abs(erp(ARchans,artcheckwin,:)),[],2)-artifTh > 0);  % (:,artcheckwin,n) % art is now elec x trial, 1 if any timepoint exceeds artif thresh, 0 if fine
-    numart = sum(art,2); % How many trials had an artifact for each ELECTRODE    
-    artifact = sum(art,1); % How many electrodes had an artifact on each TRIAL
-    figure; bar(numart); title(['Subject ' allsubj{s}])
-    
-    propKept(s) = length(find(~blink & ~artifact))/length(RT); % proportion of trials that would be kept if these were the artifact/blink detection criteria
-end
-propKept
-%%
-% First of all, the proportion of trials not rejected based on either a blink or a large amplitude on any cap
-% electrode in the long artifact check window ranges from excellent (95%) to terrible (3%). Distribution:
-figure; hist(propKept) % - 8 subjects with <50% trials retained. It's possible there are that many bad subjects 
-% but it's worth trying to tighten up the artifact check window
-
-% As you can see from the VEOG plots, some subjects are good, some are terrible blinkers. For many subjects you can see that they
-% rarely blink during the short time between evidence onset and 0.5-1 sec but relative to the response, they
-% blink very soon afterwards. Let's check the histograms of blink times across all subjects (pooled):
-figure; subplot(1,2,1), hist(blinkTms_all,[t(1):100:t(end)]); title('S-lock'); subplot(1,2,2); hist(blinkTms_allR,[-2500:100:1500]); xlim([-2500 1500]); title('R-lock')
-    
-% This is quite terrible - subjects  almost look like they are trying to time a blink on their response. With
-% better instructed subjects you could choose a wide range of alternative artifact check strategies and still
-% get reliable results but with this dataset, we will clearly have to carefully tailor the settings so as to
-% squeeze as many trials as possible out of each subject...
-% The goal is always to retain as many trials as possible but to avoid letting in noisy trials, to get the most reliable average
-%%
-% This is our plan:
-% We will choose target-locked and response-locked windows that are just wide enough to capture the dynamics 
-% of the decision process just after target onset and just before response, and only artifact-reject based on data in those narrow windows
-
-epoch_limits_msTG = [-53 747];    % Target-locked epoch; again using integer number of SSVEP cycles (1000/18.75 = 53.33)
+load([bigmatfolder 'P01_intpCSD'],'anapar') % read in the analysis parameters that were used - be sure they were the same for all subjects!
+epoch_limits_msTG = anapar.epoch_limits_msTG; % [-53 747];    % Target-locked epoch. We could use the same windows as were used for artifact rejection, or we might want different windows here - if so, don't forget that artifacts were only checked for in the window specified in IdentifyBadTrials!
 tts = round(epoch_limits_msTG(1)/1000*fs):round(epoch_limits_msTG(2)/1000*fs); % hence get the list of sample points relative to a given event that we need to extract from the continuous EEG
-tt = tts*1000/fs; % hence get the timebase for the epoch (which we can plot average ERPs against) in milliseconds
-epoch_limits_msR = [-427 53];    % Response-locked epoch; again using integer number of SSVEP cycles (1000/18.75 = 53.33)
+tt = tts*1000/fs; % hence timebase in milliseconds, for plotting etc
+epoch_limits_msR = anapar.epoch_limits_msR; % [-427 53];    % Response-locked epoch; again using integer number of SSVEP cycles (1000/18.75 = 53.33)
 trs = round(epoch_limits_msR(1)/1000*fs):round(epoch_limits_msR(2)/1000*fs); % hence get the list of sample points relative to a given event that we need to extract from the continuous EEG
-tr = trs*1000/fs; % hence get the timebase for the epoch (which we can plot average ERPs against) in milliseconds
-% Note that in Response-locked waveforms time '0' is the time of response, and weusually don't care so much about 
-% activity after that time. Our strategy is to cut out the shorter T-locked and R-locked epochs from EACH of the 
-% single stimulus-locked epochs. We have to do it on a trial by trial basis (inside the loop below) because RT is different from trial to trial!
+tr = trs*1000/fs; % hence timebase in milliseconds
+
+% Let's say we also want to compute spectral anmplitude as a function of time in the Mu/beta bands (reflects motor preparation when measured
+% over motor cortices). One way to do such time-frequency analysis is the short-Time Fourier Transform - taking FFTs in a sliding window
+% across time. First define parameters of this analysis:
+fftlen = round(fs/18.75*6); % Window of how many sample points? If there is an SSVEP involved, whether or not you are interested in analyzing it, it is good to have all power related to the SSVEP isolated in a single frequency bin. This happens when you choose a window length that is an integer number of SSVEP cycles. 
+F = [0:fftlen-1]*fs/fftlen; % frequency scale, given window length (remember resolution = 1/window-duration)
+ff = find((F>8 & F<18.7) | (F>18.8 & F<30)); % the indices of F that cover the spectral range/band of interest. Let's say we're interested in Mu and Beta bands combined. Note here I'm avoiding the SSVEP frequency (18.75hz in this example) 
+Ts = [-300:50:1000]; % in msec, centered on what times do you want to measure spectral amplitude? i.e., where to center each consecutive window in time
+Tr = [-450:50:0]; % for response-locked
 
 clear avERP avERPr
 for s=1:length(allsubj)
@@ -108,7 +35,7 @@ for s=1:length(allsubj)
     subjID = allsubj{s};
     disp([subjID '...'])
     
-    load([bigmatfolder subjID '_intp'])
+    load([bigmatfolder subjID '_intpCSD'])
 
     % Extract response-locked ERPs, create a matrix of single-trial erps similar to 'erp' but with each single trial time-locked to the response 
     ntr = length(RT); % number of trials, which we can get from the length of the RT vector
@@ -121,22 +48,7 @@ for s=1:length(allsubj)
             validrlock(n)=1;
         end
     end
-    % note we don't have to do the same for target locked because the long 'erp' epoch is already target
-    % locked - all we have to do is only artifact-check in the narrower range, and plot that range.
-    
-    % find artifact trials:
-    artcheckwinTG = find(t>=epoch_limits_msTG(1) & t<=epoch_limits_msTG(2)); % indices of the timepoints for the artifact check window
-    % First blinks:
-    VEOG = squeeze(erp(VEOGchans(1),artcheckwinTG,:)-erp(VEOGchans(2),artcheckwinTG,:)); % Upper elec minus lower elec; so now it's time x trials
-    % not going to bother with baseline-correcting VEOG here because we will check absolute deviation,+ or - value greater than threshold
-    VEOGr = squeeze(erpr(VEOGchans(1),:,:)-erpr(VEOGchans(2),:,:)); % response-locked VEOG, full timeframe
-    blink = max(abs([VEOG;VEOGr])) > blinkTh; % this will give a logical 1 if this threshold is exceeded for EITHER the T-locked or R-locked VEOG, 0 otherwise
-    % and then artifacts on any of the channels specified in ARchans above
-    art = squeeze(max(abs([erp(ARchans,artcheckwinTG,:) erpr(ARchans,:,:)]),[],2)-artifTh > 0);  % art is elec x trial, 1 if any timepoint exceeds artif thresh, 0 if fine. Again, concatenated t-lock and R-lock so will detect artifact in EITHER
-    numart = sum(art,2); % How many trials had an artifact for each ELECTRODE    
-    artifact = sum(art,1); % How many electrodes had an artifact on each TRIAL
-    figure; bar(numart); title(['Subject ' allsubj{s}])
-      
+          
     % Get the average waveforms
     for c=1:2   % coherence
         % Select trials for averaging:
@@ -146,31 +58,78 @@ for s=1:length(allsubj)
         avERPr(:,:,c,s) = mean(erpr(:,:,trl),3);
     end
 
-    propKept(s) = length(find(~blink & ~artifact))/length(RT); % proportion of trials that would be kept if these were the artifact/blink detection criteria
+    propKept(s) = length(find(~blink & ~artifact))/length(RT); 
+
+    % Now in the rest of the code in the loop, we turn to computing and averaging Mu/Beta amplitude
+    % compute short time fourier transform (STFT) for each single trial:
+    STFT = []; % initialise
+    % for the stimulus-locked STFT, we can compute ffts across all trials at once - that's why there is no 'for n=1:ntr' loop.
+    for tt=1:length(Ts) % for each STFT timepoint (window centre) we'll compute the FFT for all trials at once
+        [blah,samp] = min(abs(t-Ts(tt))); % find the sample point in the ERP epoch corresponding to the centre of the current FFT window
+        spec = abs(fft(erp(:,samp-round(fftlen/2)+[1:fftlen],:),[],2))./(fftlen/2); % compute the magnitude of FFT (and scale it so that it's amplitude in same units as EEG
+        % Save the result for each trial, just like the matrix 'erp'
+        STFT(:,tt,:) = mean(spec(:,ff,:),2);
+    end
+    % response-locked (again processing each single trial):
+    STFTr = nan(size(erp,1),length(Tr),ntr); % initalise. This time to NaN, because we want to retain same dimensions (a layer for each single trial) for indexing, but if R is such that we can't chop out a full STFT timecourse for a given trial, we mark that as NaN
+    validrlockSTFT = zeros(1,ntr); % Again, make vector indicating whether valid for response locking (1) or not (0). The criteria for this are adjusted to account for windowing in STFT
+    for n=1:ntr
+        [blah,RTsamp] = min(abs(t-RT(n)*1000)); % find the sample point closest to the RT for this trial. Remember RT is in sec
+        if RTsamp+Tr(1)*fs/1000-fftlen/2>0 & RTsamp+Tr(end)*fs/1000+fftlen/2<=length(t) & ~isnan(RT(n)) % Again, a trial is only validrlock=1 if the RT lies within the erp epoch you're using 
+            validrlockSTFT(n)=1;
+            for tt=1:length(Tr)
+                spec = abs(fft(erp(:,RTsamp+round(Tr(tt)*fs/1000)-round(fftlen/2)+[1:fftlen],n),[],2))./(fftlen/2); % compute the magnitude of FFT (and scale it so that it's amplitude in same units as EEG
+                STFTr(:,tt,n) = mean(spec(:,ff),2);
+            end
+        end
+    end
+
+    % Get the average Mu/Beta waveforms:
+    % Here, note that motor lateralisation is critical, so you have to separate out the two alternatives, left and right, indexed by m. 
+    % But note the trial designation of L/R can mean different things: whether the L or R button was PRESSED on a given trial, or whether L/R was correct on the
+    % trial! (in decision-bias studies with prior cues, it could also mean whether the cue pointed L or R!)
+    % You also have to decide whether you're averaging only correct trials (in which case the above distinction is moot), or all trials regardless of correctness.
+    % My rules of thumb are that if you want to be able to measure differences in motor prep starting point across different blocked
+    % regimes, you should compute Stimulus-locked Mu/Beta by taking all trials regardless of correctness, and if you want to see how buildup
+    % is affected by different conditions, separate the trials by L/R motion direction (i.e. correct side), so you can separately plot the
+    % motor prep signals contralateral vs ipsilateral to the correct side. 
+    % However, for the R-locked, often the priority is to test whether there is a stereotyped level reached at response, and in that case
+    % what you want is to separate trials by which button was pressed (whether correct or error). We'll do that here.
+    for c=1:2   % condition
+        for m=1:2 % direction of motion (or for R-locked, hand of response)
+            % Select trials for averaging:
+            trl = find(coh==c & modir==m & ~blink & ~artifact & validrlockSTFT);
+            avMB(:,:,m,c,s) = mean(STFT(:,:,trl),3);
+
+            % and response-locked: 
+            trl = find(coh==c & respLR==m & ~blink & ~artifact & validrlockSTFT); % again, I am not selecting for correctness - you have to think about whether you want to do that
+            avMBr(:,:,m,c,s) = mean(STFTr(:,:,trl),3);
+        end
+    end
 end
-propKept % better? Quite. There are three subjects who have >30% trials rejected that should probably be excluded
 
 %%
 
 % select certain subjects to plot?
-% sbj = 1:24; % all?
-sbj = find(propKept>.7)
+% sbj = 1:16; % usually you would plot all subjects like so
+sbj = find(propKept>.7) % ... but you MAY want to exclude subjects who have a low trial count like this
 
-% Important first of all to examine where activity shows up on the scalp during the decision
+% Important first of all to examine where activity shows up on the scalp during the trial
 % Plot a series of topographies centered on these times:
-TT = [0 160 320 480 640];
+TT = [0 160 320 480 640]; % you might be interested in more fine-grained steps if you have a sudden change at target onset, and want to see the series of evoked potential component caused by that, and assess their potential overlap and interference with the component we're mainly interested in here, the CPP. This is quite important to do. Here the taret onset was gradual so I'm spacing out the time points. 0 is good to include as a sanity check - the scalp should be pretty inactive.In discrete paradigms you have anticipatory processes already visible at t=0ms though.
 winsize = 160; % window size in ms
 figure; 
-% we'll plot lowcoherence in top row, high coherence in bottom row
+scale = [-1 1]*20; % sometimes you just take a punt at the scale (defines what value is deepest blue and what deepest red) and look at the result and then redefine to get it right. You should make sure the full range of colour is being filled, to best observe all the components happening
+% we'll plot low coherence in top row, high coherence in bottom row
 for i=1:length(TT)
-    scale = [-16 16];
     subplot(2,length(TT),i)
-    trange = find(t>TT(i)-winsize/2 & t<TT(i)+winsize/2); 
+    trange = find(t>TT(i)-winsize/2 & t<TT(i)+winsize/2); % get the time indices covering the desired time range, centred on each point in TT
     topoplot(double(mean(mean(avERP(1:nchan,trange,1,sbj),4),2)),chanlocs,'electrodes','labels','colormap','jet','maplimits',scale) % some additional arguments that you can add: ,'maplimits',[-1 1]*4 sets the colorscale
     subplot(2,length(TT),length(TT)+i)
     topoplot(double(mean(mean(avERP(1:nchan,trange,2,sbj),4),2)),chanlocs,'electrodes','labels','colormap','jet','maplimits',scale) % some additional arguments that you can add: ,'maplimits',[-1 1]*4 sets the colorscale
     title([num2str(TT(i)) ' ms'])
 end
+% This shows a gradually emerging CPP among other things
 
 % Same for response locked:
 TTr = [-8:2:0]*1000/18.75; % stepping two ssvep cycles at a time
@@ -178,7 +137,6 @@ winsize = 2*1000/18.75; % window size in ms
 figure; 
 % we'll plot lowcoherence in top row, high coherence in bottom row
 for i=1:length(TTr)
-    scale = [-16 16];
     subplot(2,length(TTr),i)
     trange = find(tr>TTr(i)-winsize/2 & tr<TTr(i)+winsize/2); 
     topoplot(double(mean(mean(avERPr(1:nchan,trange,1,sbj),4),2)),chanlocs,'electrodes','labels','colormap','jet','maplimits',scale) % some additional arguments that you can add: ,'maplimits',[-1 1]*4 sets the colorscale
@@ -199,7 +157,7 @@ ch = [19]; % choose channel to plot based on topographies above
 % first create figure and set plot dimensions etc:
 set(0,'DefaultLegendAutoUpdate','off')
 figure; set(gcf,'Position',[80 80 700 400]); set(gcf,'DefaultLineLineWidth',2);
-yl = [-2 26]; % y axis limits - consistent for Stimulus-locked and Response-locked
+yl = [-2 28]; % y axis limits - consistent for Stimulus-locked and Response-locked
 xlS = epoch_limits_msTG; % x axis limits for stimulus-locked
 xlR = epoch_limits_msR;  % x axis limits for response-locked
 
@@ -232,3 +190,43 @@ plot([0 0],yl,'k','LineWidth',3)
 set(gca,'FontSize',14)
 set(gca,'YTickLabel','');
 set(gca,'YColor',[1 1 1]);
+
+% Your figures for the first 16 subjects should look like RlockTopos_waveforms.png. 
+
+%% Now let's look at Mu/Beta 'MB'
+
+% Let's first verify that there is lateralisation of MB, where the amplitude is lower contralateral to the button that was pressed. Plotting
+% this topography also serves to highlight which electrodes might be best for measuring MB (although note there are some tasks like the
+% continuous dots (2013 paper) and any of our delayed-response tasks, where there is precious little difference in MB amplitude contra/ipsi
+% to responding hand, i.e. not much lateralisation):
+
+trange = find(Tr>=-50,1); % pick a time just before response
+figure;
+topoplot(double(mean(mean(mean(avMBr(1:nchan,trange,1,:,sbj),5),4),2)-mean(mean(mean(avMBr(1:nchan,trange,2,:,sbj),5),4),2)),chanlocs,'electrodes','labels','colormap','jet');%,'maplimits',scale) % some additional arguments that you can add: ,'maplimits',[-1 1]*4 sets the colorscale
+title('Left minus Right press')
+colorbar
+%% Mu/beta waveforms
+
+ch = [3*32+19 32+22]; % select left/right channels - typically D19 and B22, and that's the case here
+figure; hold on
+for c=1:2
+    plot(Ts,(mean(avMB(ch(2),:,1,c,sbj),5)+mean(avMB(ch(1),:,2,c,sbj),5))/2,'Color',colours(c,:),'LineWidth',2) % contralateral to correct side
+    plot(Ts,(mean(avMB(ch(1),:,1,c,sbj),5)+mean(avMB(ch(2),:,2,c,sbj),5))/2,'--','Color',colours(c,:),'LineWidth',2) % ipsilateral (dashed)
+end
+set(gca,'Ydir','reverse') % we often turn the y axis upside down, to show increasing motor preparation (which is reflected in decreasing MB amplitude)
+
+% Lateralisation - set it up so upwards means more preparation for the correct alternative
+figure; hold on
+for c=1:2
+    plot(Ts,(mean(avMB(ch(1),:,1,c,sbj),5)+mean(avMB(ch(2),:,2,c,sbj),5))/2-(mean(avMB(ch(2),:,1,c,sbj),5)+mean(avMB(ch(1),:,2,c,sbj),5))/2,'Color',colours(c,:),'LineWidth',2)
+end
+
+% Response-locked:
+figure; hold on
+for c=1:2
+    plot(Tr,(mean(avMBr(ch(2),:,1,c,sbj),5)+mean(avMBr(ch(1),:,2,c,sbj),5))/2,'Color',colours(c,:),'LineWidth',2) % contralateral to SIDE OF RESPONSE
+    plot(Tr,(mean(avMBr(ch(1),:,1,c,sbj),5)+mean(avMBr(ch(2),:,2,c,sbj),5))/2,'--','Color',colours(c,:),'LineWidth',2) % ipsilateral (dashed)
+end
+set(gca,'Ydir','reverse') % we often turn the y axis upside down, to show increasing motor preparation (which is reflected in decreasing MB amplitude)
+
+% notice that the traces coalesce at the time of response, as we've reported lots of times.
