@@ -55,7 +55,7 @@ tt = tts*1000/fs; % hence timebase in milliseconds, for plotting etc
 fftlen = round(fs/21.5*6); % Window of how many sample points? If there is an SSVEP involved, whether or not you are interested in analyzing it, it is good to have all power related to the SSVEP isolated in a single frequency bin. This happens when you choose a window length that is an integer number of SSVEP cycles.
 F = [0:fftlen-1]*fs/fftlen; % frequency scale, given window length (remember resolution = 1/window-duration)
 ff = find((F>12 & F<21.45) | (F>21.55 & F<30)); % the indices of F that cover the spectral range/band of interest. Let's say we're interested in Mu and Beta bands combined. Note here I'm avoiding the SSVEP frequency (18.75hz in this example)
-Ts = [-188*3:47:188*9]; % in msec, centered on what times do you want to measure spectral amplitude? i.e., where to center each consecutive window in time
+Ts = [-188*2:47:188*6]; % in msec, centered on what times do you want to measure spectral amplitude? i.e., where to center each consecutive window in time
 % Tr = [-188*3:47:188]; % for response-locked
 
 % Now in the rest of the code in the loop, we turn to computing and averaging Mu/Beta amplitude
@@ -122,9 +122,9 @@ count=0;
 %     case 'CW_SL_b' %correct vs wrong; pre cue SL
         for i=1:length(AllBehaviour_SL_bb)
             %select trials
-            if AllBehaviour_SL_bb(i,8)==1 && AllBehaviour_SL_bb(i,3)==0.14
+            if AllBehaviour_SL_bb(i,8)==1 && AllBehaviour_SL_bb(i,3)==0.07
                 selected_trials_1(i)=1;
-            elseif AllBehaviour_SL_bb(i,8)==2 && AllBehaviour_SL_bb(i,3)==0.14
+            elseif AllBehaviour_SL_bb(i,8)==2 && AllBehaviour_SL_bb(i,3)==0.07
                 selected_trials_2(i)=1;
             end
             %exclude invalide(too early or wrong muscle)
@@ -175,7 +175,7 @@ count=0;
         avMB2(:,:) = mean(STFT(:,:,trl2),3);
 
 
-        % Now let's look at Mu/Beta 'MB'
+        %% Now let's look at Mu/Beta 'MB'
 
 % Let's first verify that there is lateralisation of MB, where the amplitude is lower contralateral to the button that was pressed. Plotting
 % this topography also serves to highlight which electrodes might be best for measuring MB (although note there are some tasks like the
