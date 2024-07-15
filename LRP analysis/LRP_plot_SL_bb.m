@@ -94,22 +94,22 @@ time_vector_right = EEG_selected_right.times;  % time points from the EEG struct
 
 LRP_left_correct=LRP_left;
 LRP_right_correct=LRP_right;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% plot scalp plot ----- left-right _correct
+num_plots = 10;
+time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
 
-% % plot scalp plot ----- left_correct
-% num_plots = 10;
-% time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
-% 
-% % Find the indices of the defined time points
-% time_indices = arrayfun(@(t) find(EEG_selected_left.times >= t, 1), time_points);
-% 
-% % Plot scalp topographies
-% figure;
-% for i = 1:num_plots
-%     subplot(2, 5, i);  % create a 2x4 subplot
-%     topoplot(ERP_correct(:, time_indices(i)), EEG_selected_left.chanlocs, 'maplimits', [-max(abs(ERP_left(:))), max(abs(ERP_left(:)))]);
-%     title([num2str(time_points(i)), ' ms']);
-%     colorbar;
-% end
+% Find the indices of the defined time points
+time_indices = arrayfun(@(t) find(EEG_selected_left.times >= t, 1), time_points);
+
+% Plot scalp topographies
+figure;
+for i = 1:num_plots
+    subplot(2, 5, i);  % create a 2x4 subplot
+    topoplot(ERP_left(:, time_indices(i))-ERP_right(:, time_indices(i)), EEG_selected_left.chanlocs, 'maplimits', [-max(abs(ERP_left(:))), max(abs(ERP_left(:)))]);
+    title([num2str(time_points(i)), ' ms']);
+    colorbar;
+end
 % 
 % % plot scalp plot ----- right correct
 % num_plots = 10;
@@ -363,9 +363,9 @@ count=0;
 %     case 'CW_SL_b' %correct vs wrong; pre cue SL
         for i=1:length(AllBehaviour_SL_bb)
             %select trials
-            if AllBehaviour_SL_bb(i,8)==1 && AllBehaviour_SL_bb(i,4)==1 &&AllBehaviour_SL_bb(i,9)==1&& AllBehaviour_SL_bb(i,3)==0.14
+            if AllBehaviour_SL_bb(i,8)==1 && AllBehaviour_SL_bb(i,4)==2 &&AllBehaviour_SL_bb(i,9)==1&& AllBehaviour_SL_bb(i,3)==0.14
                 selected_trials_1(i)=1;
-            elseif AllBehaviour_SL_bb(i,8)==2 && AllBehaviour_SL_bb(i,4)==1 && AllBehaviour_SL_bb(i,9)==2&& AllBehaviour_SL_bb(i,3)==0.14
+            elseif AllBehaviour_SL_bb(i,8)==2 && AllBehaviour_SL_bb(i,4)==2 && AllBehaviour_SL_bb(i,9)==2&& AllBehaviour_SL_bb(i,3)==0.14
             selected_trials_2(i)=1;
             end
             %exclude invalide(too early or wrong muscle)
@@ -404,21 +404,21 @@ time_vector_right = EEG_selected_right.times;  % time points from the EEG struct
 LRP_left_correct=LRP_left;
 LRP_right_correct=LRP_right;
 
-% % plot scalp plot ----- left_correct
-% num_plots = 10;
-% time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
-% 
-% % Find the indices of the defined time points
-% time_indices = arrayfun(@(t) find(EEG_selected_left.times >= t, 1), time_points);
-% 
-% % Plot scalp topographies
-% figure;
-% for i = 1:num_plots
-%     subplot(2, 5, i);  % create a 2x4 subplot
-%     topoplot(ERP_left(:, time_indices(i)), EEG_selected_left.chanlocs, 'maplimits', [-max(abs(ERP_left(:))), max(abs(ERP_left(:)))]);
-%     title([num2str(time_points(i)), ' ms']);
-%     colorbar;
-% end
+%% plot scalp plot ----- left- right_correct
+num_plots = 10;
+time_points = linspace(-1200, 1500, num_plots);  % in milliseconds
+
+% Find the indices of the defined time points
+time_indices = arrayfun(@(t) find(EEG_selected_left.times >= t, 1), time_points);
+
+% Plot scalp topographies
+figure;
+for i = 1:num_plots
+    subplot(2, 5, i);  % create a 2x4 subplot
+    topoplot(ERP_left(:, time_indices(i))-ERP_right(:, time_indices(i)), EEG_selected_left.chanlocs, 'maplimits', [-max(abs(ERP_left(:))), max(abs(ERP_left(:)))]);
+    title([num2str(time_points(i)), ' ms']);
+    colorbar;
+end
 % 
 % % plot scalp plot ----- right correct
 % num_plots = 10;
@@ -439,7 +439,7 @@ LRP_right_correct=LRP_right;
 
 %%%%%%
 %%%%%%%%%%%%%%%%%%
-% switch%%%%%%%%%%then calculate wrong first
+%% switch%%%%%%%%%%then calculate wrong first
 %     case 'CW_SL_b' %correct vs wrong; pre cue SL
         for i=1:length(AllBehaviour_SL_bb)
             %select trials
