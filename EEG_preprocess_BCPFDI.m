@@ -191,6 +191,7 @@ for e = 2%1:2
     end
 end
 %% STEP 7: reject all epochs where there are fluctuations >150uV in any channel
+%坏道在tbt toolbox 中自动保存，已改toolbox
 %这一步删掉了一些trial，需后期定位把trial的idx找出来（可从TBT里找例子）
 %这里统一用了0点附近-1.5-1秒区域
 % This is almost the last step! We will now baseline the data before the
@@ -241,6 +242,19 @@ for e = 2%1:2
     end
 end
 
-%% STEP 9: Morlet - wavelet transform 
+%% STEP 7-9: Morlet - wavelet transform 
+% here use TBT toolbox and CSD without baseline correction
+%坏道在tbt toolbox 中自动保存，已改toolbox
+for e = 1:2
+    epoch = exp.epochs{e};
+    for sub = exp.sub_id(1:end)
 
+         EEG = pop_loadset([exp.filepath 'cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
+        TLBF2_cleanEpochs(sub,exp,EEG); % Threshold; remove epochs with > 150uV drifts in any channel
+        EEG = pop_loadset([exp.filepath 'acICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
+         TLBF2_applyCSD(sub,exp, EEG)
+
+
+    end
+end
 
