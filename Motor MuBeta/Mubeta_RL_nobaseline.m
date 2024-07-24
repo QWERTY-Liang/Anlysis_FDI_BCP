@@ -6,7 +6,7 @@
 %1.function all the code to make main script simplier
 %% Toolbox requirements: 
 clc
-clear
+clear all
 addpath('G:\My Drive\Phd\EEGLAB\eeglab-develop');% EEGlab toolbox
 addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis'));% current folder
 
@@ -273,24 +273,24 @@ time_points = linspace(-188*4,188, num_plots);  % in milliseconds
 % Find the indices corresponding to the defined time points
 time_indices = arrayfun(@(t) find(Ts >= t, 1), time_points);
 
-% Plot the scalp topographies at selected time points
-figure;
-for i = 1:num_plots
-    subplot(2, 5, i);  % Create a 2x5 subplot
-    topoplot(double(avMB1(1:128, time_indices(i)) - avMB2(1:128, time_indices(i))), ...
-        EEG.chanlocs,  'maplimits', [-0.8,0.8])%,'electrodes', 'labels');
-    title([num2str(time_points(i)), ' ms']);
-    colorbar;
-end
-
-figure;
-for i = 1:num_plots
-    subplot(2, 5, i);  % Create a 2x5 subplot
-    topoplot(double(avMB11(1:128, time_indices(i)) - avMB22(1:128, time_indices(i))), ...
-        EEG.chanlocs,  'maplimits', 0.5*[-1.6,1.6])%,'electrodes', 'labels');
-    title([num2str(time_points(i)), ' ms']);
-    colorbar;
-end
+% % Plot the scalp topographies at selected time points
+% figure;
+% for i = 1:num_plots
+%     subplot(2, 5, i);  % Create a 2x5 subplot
+%     topoplot(double(avMB1(1:128, time_indices(i)) - avMB2(1:128, time_indices(i))), ...
+%         EEG.chanlocs,  'maplimits', [-0.8,0.8])%,'electrodes', 'labels');
+%     title([num2str(time_points(i)), ' ms']);
+%     colorbar;
+% end
+% 
+% figure;
+% for i = 1:num_plots
+%     subplot(2, 5, i);  % Create a 2x5 subplot
+%     topoplot(double(avMB11(1:128, time_indices(i)) - avMB22(1:128, time_indices(i))), ...
+%         EEG.chanlocs,  'maplimits', 0.5*[-1.6,1.6])%,'electrodes', 'labels');
+%     title([num2str(time_points(i)), ' ms']);
+%     colorbar;
+% end
 % trange = find(Ts>=800,1); % pick a time just before response
 % figure;
 % topoplot(double(avMB1(1:128,trange)-avMB2(1:128,trange)),EEG.chanlocs,'electrodes','labels','colormap','jet');%,'maplimits',scale));
@@ -300,7 +300,23 @@ end
 % title('Left minus Right press')
 % colorbar
 
+figure;
+for i = 1:num_plots
+    subplot(2, 5, i);  % Create a 2x5 subplot
+    topoplot(double(avMB1(1:128, time_indices(i))) , ...
+        EEG.chanlocs,  'colormap','jet')%,'electrodes', 'labels');
+    title([num2str(time_points(i)), ' ms']);
+    colorbar;
+end
 
+figure;
+for i = 1:num_plots
+    subplot(2, 5, i);  % Create a 2x5 subplot
+    topoplot(double(avMB11(1:128, time_indices(i))), ...
+        EEG.chanlocs, 'colormap','jet')%,'electrodes', 'labels');
+    title([num2str(time_points(i)), ' ms']);
+    colorbar;
+end
 %% Mu/beta waveforms
 
 ch = [116 55];%[6 35]%[116 55]; % select left/right channels - typically D19 and B22, and that's the case here

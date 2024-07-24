@@ -54,7 +54,7 @@ tt = tts*1000/fs; % hence timebase in milliseconds, for plotting etc
 % across time. First define parameters of this analysis:
 fftlen = round(fs/21.5*6); % Window of how many sample points? If there is an SSVEP involved, whether or not you are interested in analyzing it, it is good to have all power related to the SSVEP isolated in a single frequency bin. This happens when you choose a window length that is an integer number of SSVEP cycles.
 F = [0:fftlen-1]*fs/fftlen; % frequency scale, given window length (remember resolution = 1/window-duration)
-ff = find((F>12 & F<21.45) | (F>21.55 & F<30)); % the indices of F that cover the spectral range/band of interest. Let's say we're interested in Mu and Beta bands combined. Note here I'm avoiding the SSVEP frequency (18.75hz in this example)
+ff = find((F>13 & F<21.45) | (F>21.55 & F<30)); % the indices of F that cover the spectral range/band of interest. Let's say we're interested in Mu and Beta bands combined. Note here I'm avoiding the SSVEP frequency (18.75hz in this example)
 Ts = [-188*2:47:188*6]; % in msec, centered on what times do you want to measure spectral amplitude? i.e., where to center each consecutive window in time
 % Tr = [-188*3:47:188]; % for response-locked
 
@@ -205,9 +205,9 @@ count=0;
 %     case 'CW_SL_b' %correct vs wrong; pre cue SL
         for i=1:length(AllBehaviour_SL_bb)
             %select trials
-            if AllBehaviour_SL_bb(i,8)==1 && AllBehaviour_SL_bb(i,4)==1 &&AllBehaviour_SL_bb(i,9)==2%&& AllBehaviour_SL_bb(i,3)==0.07
+            if AllBehaviour_SL_bb(i,8)==1 && AllBehaviour_SL_bb(i,4)==1 &&AllBehaviour_SL_bb(i,9)==1%&& AllBehaviour_SL_bb(i,3)==0.07
                 selected_trials_1(i)=1;
-            elseif AllBehaviour_SL_bb(i,8)==2 && AllBehaviour_SL_bb(i,4)==1 &&AllBehaviour_SL_bb(i,9)==1%&& AllBehaviour_SL_bb(i,3)==0.07
+            elseif AllBehaviour_SL_bb(i,8)==2 && AllBehaviour_SL_bb(i,4)==1 &&AllBehaviour_SL_bb(i,9)==2%&& AllBehaviour_SL_bb(i,3)==0.07
                 selected_trials_2(i)=1;
             end
             %exclude invalide(too early or wrong muscle)
@@ -231,9 +231,9 @@ count=0;
 %     case 'CW_SL_b' %correct vs wrong; pre cue SL
         for i=1:length(AllBehaviour_SL_bb)
             %select trials
-            if AllBehaviour_SL_bb(i,8)==1 && AllBehaviour_SL_bb(i,4)==2 &&AllBehaviour_SL_bb(i,9)==2%&& AllBehaviour_SL_bb(i,3)==0.07
+            if AllBehaviour_SL_bb(i,8)==1 && AllBehaviour_SL_bb(i,4)==2 &&AllBehaviour_SL_bb(i,9)==1%&& AllBehaviour_SL_bb(i,3)==0.07
                 selected_trials_11(i)=1;
-            elseif AllBehaviour_SL_bb(i,8)==2 && AllBehaviour_SL_bb(i,4)==2 &&AllBehaviour_SL_bb(i,9)==1%&& AllBehaviour_SL_bb(i,3)==0.07
+            elseif AllBehaviour_SL_bb(i,8)==2 && AllBehaviour_SL_bb(i,4)==2 &&AllBehaviour_SL_bb(i,9)==2%&& AllBehaviour_SL_bb(i,3)==0.07
                 selected_trials_22(i)=1;
             end
             %exclude invalide(too early or wrong muscle)
@@ -257,6 +257,16 @@ count=0;
         avMB11(:,:) = mean(STFT(:,:,trl11),3);% wrong-left
         avMB22(:,:) = mean(STFT(:,:,trl22),3);% wrong-right
 
+        % baseline f-domain -
+        bas_idx=5; %188ms(just before evdience)
+        avMB1(:,:) = avMB1(:,:)-avMB1(:,bas_idx);
+        avMB2(:,:) = avMB2(:,:)-avMB2(:,bas_idx);
+        avMB11(:,:) = avMB11(:,:)-avMB11(:,bas_idx);
+        avMB22(:,:) = avMB22(:,:)-avMB22(:,bas_idx);
+
+
+
+
 
         %% Now let's look at Mu/Beta 'MB'
 
@@ -270,13 +280,36 @@ time_points = linspace(-188*0.75,188*6, num_plots);  % in milliseconds
 
 % Find the indices corresponding to the defined time points
 time_indices = arrayfun(@(t) find(Ts >= t, 1), time_points);
+%只画左和右, beta层面baseline 8成功
+figure;
+for i = 1:num_plots
+    subplot(2, 5, i);  % Create a 2x5 subplot
+    topoplot(double(avMB1(1:128, time_indices(i))) , ...
+        EEG.chanlocs,  'colormap','jet')%,'electrodes', 'labels');%
+    title([num2str(time_points(i)), ' ms']);
+    colorbar;
+end
 
-% Plot the scalp topographies at selected time points
+figure;
+for i = 1:num_plots
+    subplot(2, 5, i);  % Create a 2x5 subplot
+    topoplot(double(avMB2(1:128, time_indices(i))), ...
+        EEG.chanlocs, 'colormap','jet')%,'electrodes', 'labels');%
+    title([num2str(time_points(i)), ' ms']);
+    colorbar;
+end
+
+%% % Plot the scalp topographies at selected time points
+num_plots = 10;
+time_points = linspace(-188*0.75,188*6, num_plots);  % in milliseconds
+
+% Find the indices corresponding to the defined time points
+time_indices = arrayfun(@(t) find(Ts >= t, 1), time_points);
 figure;
 for i = 1:num_plots
     subplot(2, 5, i);  % Create a 2x5 subplot
     topoplot(double(avMB1(1:128, time_indices(i)) - avMB2(1:128, time_indices(i))), ...
-        EEG.chanlocs,  'maplimits', [-0.8,0.8])%,'electrodes', 'labels');
+        EEG.chanlocs,  'maplimits', 0.5*[-0.8,0.8])%,'electrodes', 'labels');
     title([num2str(time_points(i)), ' ms']);
     colorbar;
 end
@@ -285,7 +318,7 @@ figure;
 for i = 1:num_plots
     subplot(2, 5, i);  % Create a 2x5 subplot
     topoplot(double(avMB11(1:128, time_indices(i)) - avMB22(1:128, time_indices(i))), ...
-        EEG.chanlocs,  'maplimits', 0.5*[-1.6,1.6])%,'electrodes', 'labels');
+        EEG.chanlocs,  'maplimits', 0.5*[-0.8,0.8])%,'electrodes', 'labels');
     title([num2str(time_points(i)), ' ms']);
     colorbar;
 end
@@ -297,13 +330,13 @@ end
 % 
 % title('Left minus Right press')
 % colorbar
-
+% Plot the scalp topographies at selected time points
 
 %% Mu/beta waveforms
 
-ch = [116 55];%[6 35]%[116 55]; % select left/right channels - typically D19 and B22, and that's the case here
+ch = [115+1 54+1];%[6 35]%[116 55]; % select left/right channels - typically D19 and B22, and that's the case here
 figure; hold on
-%correct
+%correct+
 h1=plot(Ts,(avMB1(ch(2),:)+avMB2(ch(1),:))/2,'r'); % contralateral to correct side
 h2=plot(Ts,(avMB1(ch(1),:)+avMB2(ch(2),:))/2,'--r');%(mean(avMB(ch(1),:,1,c,sbj),5)+mean(avMB(ch(2),:,2,c,sbj),5))/2,'--','Color',colours(c,:),'LineWidth',2) % ipsilateral (dashed)
 %wrong
@@ -313,19 +346,19 @@ set(gca,'Ydir','reverse') % we often turn the y axis upside down, to show increa
 %ylim([6.5,8.5])
 title('MB: contralateral vs ipsilateral (dash)');
 %legend([h1,h2,h3,h4],{'Correct_contra','Correct_ipsi','Wrong_contra','Wrong_ipsi'},'AutoUpdate', 'off');
-% legend([h1,h2,h3,h4],{'High_contra','High_ipsi','Low_contra','Low_ipsi'},'AutoUpdate', 'off');
-legend([h1,h2,h3,h4],{'FDI_contra','FDI_ipsi','BCP_contra','BCP_ipsi'},'AutoUpdate', 'off');
+%legend([h1,h2,h3,h4],{'High contra','High ipsi','Low contra','Low ipsi'},'AutoUpdate', 'off');
+legend([h1,h2,h3,h4],{'FDI contra','FDI ipsi','BCP contra','BCP ipsi'},'AutoUpdate', 'off');
 xlabel('Time (ms)');
 ylabel('Beta (µV/m^2)');
 title(['MB for Channel :', num2str(ch(1)),' and : ', num2str(ch(2))]);
 % Add vertical lines at specified time points
 xline([,0, 800], '--r', {'evidence on', 'minEvd0.8'});
 % Lateralisation - set it up so upwards means more preparation for the correct alternative
-figure; hold on
 
-plot(Ts,(avMB1(ch(1),:)+avMB2(ch(2),:))/2-(avMB1(ch(2),:)+avMB2(ch(1),:))/2)%,'Color',colours(c,:),'LineWidth',2)
-ylim([-0.3 0.3])
-title('MB: Lateralisation contra-ipsi');
+%figure; hold on
+% plot(Ts,(avMB1(ch(1),:)+avMB2(ch(2),:))/2-(avMB1(ch(2),:)+avMB2(ch(1),:))/2)%,'Color',colours(c,:),'LineWidth',2)
+% ylim([-0.3 0.3])
+% title('MB: Lateralisation contra-ipsi');
 
 % % Response-locked:
 % figure; hold on
