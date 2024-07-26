@@ -1,0 +1,249 @@
+%% Here's the general idea of the stimulus (read and run cell by cell):
+% A right tilted grating is flashed on and off in alternation with a left-tilted grating like so: left-off-right-off-...
+% and so visual cortical neurons selective for the two orientations, which are intermingled in the brain and have the
+% same scalp topography, will be simultaneously oscillating at opposite phase to one another. If they are equal contrast
+% the two orientation-specific steady-state oscillations, let's call them xL and xR, will sum to zero, but if one is stronger than
+% the other, e.g. because left-tilted is higher contrast, then on the scalp we will see an oscillation that has the same
+% phase as the higher-contrast of the two:
+phiL = pi/4; % this is a simulation. Let's say this is the phase of the SSVEP for the left-tilted grating
+phiR = phiL+pi; % then the right tilted signal will be 180 degrees (pi) out of phase - directly opposite.
+tt = [0:1/512:1]; % sample rate of 512 Hz
+fv = 21.5; % flicker frequency in Hz - this is for EACH orientation. the overall on-off flicker rate of the stimulus will be double this
+xL1 = sin(2*pi*fv*tt + phiL); % xL signal of normalised amplitude 1
+xR1 = sin(2*pi*fv*tt + phiR); % xR signal of normalised amplitude 1
+
+% scenario a: equal contrast:
+xL = xL1;
+xR = xR1;
+xT = xL + xR; % total signal on the scalp is the sum of the two.
+
+figure; hold on
+plot(tt,xL); plot(tt,xR); plot(tt,xT); % total signal is flat because they cancel
+legend('xL','xR','xT')
+
+% scenario b: left-tilted higher contrast:
+xL = 1.2*xL1;
+xR = 0.8*xR1;
+xT = xL + xR;
+
+figure; hold on
+plot(tt,xL); plot(tt,xR); plot(tt,xT); % total signal is flat because they cancel
+legend('xL','xR','xT')
+
+%%
+% The same principle would apply if xL and xR were modulated by some top-down influence rather than contrast. The only
+% thing is, in practice we don't know the phases phiL and phiR a priori. So if we had an equal-contrast condition and
+% there was a small oscillation on the scalp like the yellow trace in scenario b, we wouldn't actually be able to tell
+% whether it was the left-tilted or the right-tilted signal that is being boosted above the other, because we don't have
+% access to the blue and red waves! 
+% So, to analyse the differential orientation signal, any spectral analysis will give you the magnitude of the
+% difference, and when you KNOW which grating is stronger, you can confidently assume that the spectral amplitude at
+% 18.75Hz has the phase of that brighter grating, and you need not care about phase anyway - the 18.75 Hz magnitude will 
+% get bigger the bigger the contrast difference. But if you are analysing an equal-contrast condition, where any
+% modulation is endogenous, then your ignorance about phase is a problem. The solution is simple: compare the
+% equal-contrast condition against the unequal-contrast conditions! 
+% Let's simulate:
+figure; hold on
+ssvep = 0.1*sin(2*pi*fv*tt + 5*pi/4); % this is a mystery ssvep we're measuring in an equal contrast condition. Pretend we didn't generate it.
+plot(tt,ssvep,'k')
+% How can we tell whether the left-tilted representation or the right-tilted representatoin is being relatively amplified?
+%% plot the unequal-contrast conditions:
+plot(tt,1.2*xL1 + 0.8*xR1,'c') % condition with left-tilted grating brighter
+plot(tt,0.8*xL1 + 1.2*xR1,'m') % condition with right-tilted grating brighter
+legend('EqualCont','LeftBrighter','RightBrighter')
+% It's in phase with the magenta, opposite to cyan -> the brain is amplifying the right-tilted grating!
+
+%%
+% A similar principle applies to the situation where we DO have a contrast difference for some period of time, but the
+% contrast is EQUAL in a time period of interest just preceding or just following. Again, we use the fact that phase clearly reveals 
+% itself for unequal contrast conditions to figure out the relatively amplified orientation in equal-contrast conditions, 
+% but this time by extrapolating across time, back or forward from the period that has unequal contrast.
+% Here's our new mystery signal:
+figure; hold on
+ssvep = [0.01*sin(2*pi*fv*tt(1:200) + 5*pi/4) 0.1*sin(2*pi*fv*tt(201:end) + 5*pi/4)]; % there was a 200-sample foreperiod before the contrast becomes unequal, where the right-tilted orientation was indicated to be worth more gold.
+plot(tt,ssvep,'k')
+% Now there is only a contrast difference after sample 201
+plot(tt,[zeros(1,200) 1.2*xL1(201:end)+0.8*xR1(201:end)],'c') % condition with left-tilted grating brighter
+plot(tt,[zeros(1,200) 0.8*xL1(201:end)+1.2*xR1(201:end)],'m') % condition with right-tilted grating brighter
+legend('EqualCont','LeftBrighter','RightBrighter')
+
+% BUT, we can extend back in time those oscillations:
+plot(tt(1:200),1.2*xL1(1:200) + 0.8*xR1(1:200),'c--') % condition with left-tilted grating brighter
+plot(tt(1:200),0.8*xL1(1:200) + 1.2*xR1(1:200),'m--') % condition with right-tilted grating brighter
+
+% extrapolating back in time the oscillations generated by unequal contrast favouring each of the two gratings, we can
+% tell that that anticipatory modulation favours the right-tilted grating.
+
+% The potential flaw with these approaches to inferring directionality of modulations in equal-contrast conditions/time-periods 
+% by extrapolating from unequal-contrast conditions/timeframes, is that there is a strong assumption of phase stability.
+% Specifically, we are assuming that if there IS an endogenous modulation exerted in the absence of actual contrast
+% differences, it is a modulation of amplitude only, and will take the exact same form as a modulation due to a real
+% contrast difference. But the modulations could impact timing as well as amplitude, shifting the phase.
+
+%% This code just for Hadiseh
+% I forgot to tell you to save a variable called "firstTilt" for all single trials. I added it to the 
+% matfile for S9 by using the simple code:
+firstTilt = [];
+for b=1:12 % 12 blocks
+    load(['S9/S9_' num2str(b) 'VD'])
+    firstTilt = [firstTilt par.firstTilt];
+end
+% load('S9_intp')
+% save(['S9_intp'],'RT','anapar','blocknum','brighterLR','coh','durationCoh','erp','filenames','respLR','t')
+%%
+
+subjID = 'S9'; % subject
+load([subjID '_intp'])
+
+fs=512; % EEG sample rate
+
+load chanlocsBioSemi128;
+nchan = 128; % number of channels
+next = 8;  % number of externals
+
+%% Now we'll do a spectral analysis on each single trial to pull out the timecourse of the 18.75Hz component
+
+% We can use any spectral decomposition method - wavelets, short-time Fourier transform (STFT), etc. 
+% Here we'll use something equivalent to an STFT as we typically have in past studies. An STFT computes an FFT in a
+% certain short-ish time window, then shifts the window along in time a little and does it again, and again, etc, and
+% then you can extract a certain frequency or frequency band from each fft and you have a time-course of its spectral
+% amplitude.
+% FFTs are convolutions of a signal with a complex sinusoid of a series of frequencies. We only care about the flicker frequency. 
+% So to save space let's make a complex sinusoid at just 18.75 Hz to convolve with our EEG. We will pick a time window
+% that has an integer number of flicker cycles in it, for best accuracy:
+fftlen = 164; % 273;  % in sample points. 164 samples is 320 ms, almost exactly 6 cycles of the flicker.
+% Make the complex sinusoid. It's rather like a wavelet but is not tapered like normal wavelets are:
+wvlt = exp(i*2*pi*fv*[1:fftlen]/fs);
+
+% now convolve this with all erps at all channels:
+clear sv
+for e=1:nchan
+    for n=1:size(erp,3)
+        sv(e,:,n) = conv(erp(e,:,n),wvlt,'same');
+    end
+end
+% (takes a while)
+
+% After doing this, sv gives us a complex 18.75 Hz signal for each channel for each single trial.
+% The absolute phase of sv depends on things like transmission delays to visual cortex as well as the choice of phase of the complex 'wavelet', and it doesn't really matter. 
+% What matters is the relative phase among the signals. 
+
+%% Now let's plot some averages across trials in various conditions
+% In the task code, we pseudo-randomised which grating came first in the flicker.
+% The indicator vector firstTilt says whether the first grating presented was a left-tilted grating (1) or a right-tilted one (2).
+% So firstTilt=1 means left-off-right-off-left-off-ri...
+% &  firstTilt=2 means right-off-left-off-right-off-lef...
+% From this we can compute whether the first grating was the brighter one, regardless of tilt:
+brightfirst = (firstTilt==brighterLR); 
+
+% In this particular experiment we have 5 duration/coherence combinations, and 2 possible 'directions' (which is
+% brighter, left or right-tilted), so 10 conditions altogether.
+% durationCoh = 1 means low contrast difference and duration 0.2 sec
+% durationCoh = 2 means low contrast difference and duration 0.4 sec
+% durationCoh = 3 means low contrast difference and duration 0.8 sec
+% durationCoh = 4 means low contrast difference and duration 1.6 sec
+% durationCoh = 5 means high contrast difference and duration 1.6 sec
+% Critically, the duration of the STIMULUS is always 1.6 sec beyond the evidence onset, so in durationCoh=2 for example, the
+% grating contrasts step back to 50-50 after 400 ms.
+
+% Get the average waveforms for each condition regardless of outcome:
+clear SV
+for c=1:5   % durationCoh condition
+    for lr=1:2 % which grating was brighter?
+        for bf=0:1 % brightfirst
+            trl = find(durationCoh==c & brightfirst==bf & brighterLR==lr);% & respLR~=brighterLR);% & ~blink & ~artifact);
+            numtr(c,lr,bf+1) = length(trl); % good to record the number of trials that went into each average
+            SV(:,:,c,lr,bf+1) = mean(sv(:,:,trl),3);
+        end
+    end
+end
+% note there's no artifact rejection - that should be added as you prefer!
+
+%%
+% The most obvious thing we should expect of course is that the
+% signal has opposite phase for brightfirst==0 relative to brightfirst==1. 
+% Let's have a look at electrode 23 (Oz) - ssvep for a stimulus centred on the fovea should usually show up around there:
+ch=23;
+figure; hold on
+col = jet; % choose some colours for the traces
+colors = col([1:15:64],:); 
+
+% Now SV are complex exponentials which are effectively two-dimensional (real and imaginary part), 
+% so to look at it as a simple sinusoidal signal over time, we plot just the real part (or the imaginary part, again all that matters is RELATIVE phase betwen conditions)
+for c=1:5
+    % We'll just average across brightLR =1/2 presuming that's symmetric
+    plot(t,real(mean(SV(ch,:,c,:,1),4)),'Color',colors(c,:),'LineWidth',1) % Dim first
+end
+for c=1:5
+    plot(t,real(mean(SV(ch,:,c,:,2),4)),'Color',colors(c,:),'LineWidth',2) % Bright first
+end
+legend(num2str([1:5]'))
+% Note bright first and dim first are opposite phase as expected. The time it takes for amplitude to ramp up is about
+% 320 ms, the fft window length, which makes sense. 
+%% Since there is that expected tendency for brightfirst and dimfirst to be opposite phase, we can just subtract them:
+figure; hold on
+for c=1:5
+    plot(t,real(mean(diff(SV(ch,:,c,:,:),[],5),4)),'Color',colors(c,:)) % brightfirst minus dimfirst
+end
+legend(num2str([1:5]'))
+% You can see from the high contrast difference condition that the ramp-up reaches its midpoint at about 100 ms and
+% ramp-down midpoint at about 1700 ms, together suggesting there's a circa 100-ms delay from changes on the screen to
+% changes in the Steady-state VEP amplitude. The shortest duration condition 1 has 200 ms of contrast difference so the
+% SV amplitude should reach its highest at the midpoint plus 100 ms delay = 200 ms, which it does, and as expected, the
+% 400-ms duration condition is the next to reduce in amplitude, then the 800 ms, but there are some very interesting
+% dynamics beyond that, due to the subject actively analysing those grating contrasts to compare them.
+% So next let's try to recapitulate these plots but taking a view where positive values mean towards the "correct" phase
+% (i.e. driven by the grating that is actually higher in contrast on a given trial) and negative mean towards the
+% opposite, "wrong" phase favouring the dimmer grating.
+%%
+% The way we'll do it is by choosing one reference timepoint where we most confidently believe the phase is driven by
+% the true contrast difference, note the phase at that time, taking it as representative of the correct phase, and
+% extrapolate back and forward from there.
+    
+% Seems most sensible to take a timepoint around the time the ssvep initially levels off (which is dependent on the fftlen of course)
+% - around 250 ms. In computing the reference phase I'll just include conditions 2-4 because condition 1 is already on the way back down by 300 ms, 
+% and condition 5 potentially has a very different phase due to having very different contrast difference (remember visual cortical response latencies scale inversely with contrast)
+% Note that in using conditions 2-4 as reference phase, we'll likely be underestimating the true amplitude of the
+% high-contrast condition so if we really cared about optimally extracting the high-contrast condition we'd compute and 
+% use a different reference phase for that one condition. But I'm not bothering with that here.
+
+reftime = find(t>250,1); % reference time
+refphase = angle(mean(mean(diff(SV(ch,reftime,2:4,:,:),[],5),4),3)); % reference phase 
+% now make a reference complex exponential wave that extrapolates from that reference time/phase:
+refwave = exp(i*((t'-t(reftime))/1000*fv*2*pi+refphase));
+
+plot(t,real(refsin)*500,'k') % can plot it in the same way as the averages above to make sure it lines up at the
+% reference time point.
+
+% Now use this reference rotate all complex exponential signals at all time points for all single trials so that the values represent the 
+% degree to which the differential ssvep leans towards the correct, higher-contrast-driven phase, by extrapolating from this reference phase:
+% We have to rotate the dimfirst trials in the opposite direction so we'll do the two separately:
+
+sv1(:,find(brightfirst==1)) = squeeze(sv(ch,:,find(brightfirst==1)))./repmat(refwave,[1,length(find(brightfirst==1))]);
+sv1(:,find(brightfirst==0)) = squeeze(sv(ch,:,find(brightfirst==0)))./repmat(refwave,[1,length(find(brightfirst==0))]);
+
+% For reasons best explained in secondary school trigonometry, dividing by a unit-amplitude complex exponential has the
+% effect of rotating the angle backwards so that for all time points it should tend to lie on the positive real axis.
+% All we have to do below then is take the real part of the signal, and effectively, what we're seeing is the ssvep
+% amplitude "projected" onto the "correct" phase.
+
+%% Now we can divide up and plot averages across trials in whatever way we want 
+% because for each single trial, positive means toward the higher-contrast grating and negative means away
+
+for c=1:5   % durationCoh condition
+    SV1(:,c) = mean(sv1(:,find(durationCoh==c & brightfirst==1)),2);
+end
+
+figure; hold on
+for c=1:5
+    plot(t,real(SV1(:,c)),'Color',colors(c,:)) 
+end
+legend(num2str([1:5]'))
+
+% what we can see here is that when the evidence switches off and goes back to equal-contrast, there is a period of time
+% where the grating that WAS dimmer wins out (negative sv1 values), probably due to selective adaptation, and then
+% recovers to around zero. One of our hypotheses for this dataset was that there might be a confirmation bias expressed
+% in the sensory evidence signal, where, because some evidence has been gathered in favour of the grating that was
+% brighter for some time, that grating is boosted even after it drops back down to the baseline contrast. Not happening
+% for this subject anyway!
+

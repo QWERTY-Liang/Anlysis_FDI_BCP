@@ -352,7 +352,7 @@ xlabel('Time (ms)');
 ylabel('Beta (µV/m^2)');
 title(['MB for Channel :', num2str(ch(1)),' and : ', num2str(ch(2))]);
 % Add vertical lines at specified time points
-xline([,0, 800], '--r', {'evidence on', 'minEvd0.8'});
+xline([0, 800], '--r', {'evidence on', 'minEvd0.8'});
 % Lateralisation - set it up so upwards means more preparation for the correct alternative
 
 %figure; hold on

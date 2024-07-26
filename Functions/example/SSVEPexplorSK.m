@@ -8,7 +8,7 @@
 phiL = pi/4; % this is a simulation. Let's say this is the phase of the SSVEP for the left-tilted grating
 phiR = phiL+pi; % then the right tilted signal will be 180 degrees (pi) out of phase - directly opposite.
 tt = [0:1/512:1]; % sample rate of 512 Hz
-fv = 18.75; % flicker frequency in Hz - this is for EACH orientation. the overall on-off flicker rate of the stimulus will be double this
+fv = 21.5; % flicker frequency in Hz - this is for EACH orientation. the overall on-off flicker rate of the stimulus will be double this
 xL1 = sin(2*pi*fv*tt + phiL); % xL signal of normalised amplitude 1
 xR1 = sin(2*pi*fv*tt + phiR); % xR signal of normalised amplitude 1
 
