@@ -259,6 +259,12 @@ count=0;
         avMB11(:,:) = mean(STFT(:,:,trl11),3);% wrong-left
         avMB22(:,:) = mean(STFT(:,:,trl22),3);% wrong-right
 
+        % baseline f-domain -
+        bas_idx=10; %-188ms(just before response)
+        avMB1(:,:) = avMB1(:,:)-avMB1(:,bas_idx);
+        avMB2(:,:) = avMB2(:,:)-avMB2(:,bas_idx);
+        avMB11(:,:) = avMB11(:,:)-avMB11(:,bas_idx);
+        avMB22(:,:) = avMB22(:,:)-avMB22(:,bas_idx);
 
         %% Now let's look at Mu/Beta 'MB'
 
@@ -268,7 +274,8 @@ count=0;
 % to responding hand, i.e. not much lateralisation):
 % Define the number of plots and the time points
 num_plots = 10;
-time_points = linspace(-188*4,188, num_plots);  % in milliseconds
+
+time_points = linspace(-188*4,188*0.5, num_plots);  % in milliseconds
 
 % Find the indices corresponding to the defined time points
 time_indices = arrayfun(@(t) find(Ts >= t, 1), time_points);
@@ -303,8 +310,8 @@ time_indices = arrayfun(@(t) find(Ts >= t, 1), time_points);
 figure;
 for i = 1:num_plots
     subplot(2, 5, i);  % Create a 2x5 subplot
-    topoplot(double(avMB1(1:128, time_indices(i))) , ...
-        EEG.chanlocs,  'colormap','jet')%,'electrodes', 'labels');
+    topoplot(double(avMB1(1:128, time_indices(i))-avMB2(1:128, time_indices(i))) , ...
+         EEG.chanlocs,  'maplimits', 0.75*[-0.8,0.8])%,'electrodes', 'labels');
     title([num2str(time_points(i)), ' ms']);
     colorbar;
 end
@@ -312,14 +319,14 @@ end
 figure;
 for i = 1:num_plots
     subplot(2, 5, i);  % Create a 2x5 subplot
-    topoplot(double(avMB11(1:128, time_indices(i))), ...
-        EEG.chanlocs, 'colormap','jet')%,'electrodes', 'labels');
+    topoplot(double(avMB11(1:128, time_indices(i))-avMB22(1:128, time_indices(i))), ...
+         EEG.chanlocs,  'maplimits', 0.75*[-0.8,0.8])%,'electrodes', 'labels');
     title([num2str(time_points(i)), ' ms']);
     colorbar;
 end
 %% Mu/beta waveforms
 
-ch = [116 55];%[6 35]%[116 55]; % select left/right channels - typically D19 and B22, and that's the case here
+ch = [115+1 54+1];%[6 35]%[116 55]; % select left/right channels - typically D19 and B22, and that's the case here
 figure; hold on
 %correct
 h1=plot(Ts,(avMB1(ch(2),:)+avMB2(ch(1),:))/2,'r'); % contralateral to correct side
@@ -331,19 +338,19 @@ set(gca,'Ydir','reverse') % we often turn the y axis upside down, to show increa
 %ylim([6.5,8.5])
 title('MB: contralateral vs ipsilateral (dash)');
 %legend([h1,h2,h3,h4],{'Correct_contra','Correct_ipsi','Wrong_contra','Wrong_ipsi'},'AutoUpdate', 'off');
-% legend([h1,h2,h3,h4],{'High_contra','High_ipsi','Low_contra','Low_ipsi'},'AutoUpdate', 'off');
-legend([h1,h2,h3,h4],{'FDI_contra','FDI_ipsi','BCP_contra','BCP_ipsi'},'AutoUpdate', 'off');
+ legend([h1,h2,h3,h4],{'High_contra','High_ipsi','Low_contra','Low_ipsi'},'AutoUpdate', 'off');
+%legend([h1,h2,h3,h4],{'FDI_contra','FDI_ipsi','BCP_contra','BCP_ipsi'},'AutoUpdate', 'off');
 xlabel('Time (ms)');
 ylabel('Beta (µV/m^2)');
 title(['MB for Channel :', num2str(ch(1)),' and : ', num2str(ch(2))]);
 % Add vertical lines at specified time points
 xline([-230, 0], '--r', { 'appx. respT', 'EVoff'});
 % Lateralisation - set it up so upwards means more preparation for the correct alternative
-figure; hold on
-
-plot(Ts,(avMB1(ch(1),:)+avMB2(ch(2),:))/2-(avMB1(ch(2),:)+avMB2(ch(1),:))/2)%,'Color',colours(c,:),'LineWidth',2)
-ylim([-0.3 0.3])
-title('MB: Lateralisation contra-ipsi');
+% figure; hold on
+% 
+% plot(Ts,(avMB1(ch(1),:)+avMB2(ch(2),:))/2-(avMB1(ch(2),:)+avMB2(ch(1),:))/2)%,'Color',colours(c,:),'LineWidth',2)
+% ylim([-0.3 0.3])
+% title('MB: Lateralisation contra-ipsi');
 
 % % Response-locked:
 % figure; hold on
