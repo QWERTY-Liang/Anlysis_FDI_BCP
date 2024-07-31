@@ -31,6 +31,7 @@ function [] = TLB1_AllBehaviour(exp)
     rt = [];         % response time of trial (in seconds)
     evshowtime =[]   % 0.2sec additional time after response
     totEMG = [];     % total EMG, concatenation of baseline, trial, post
+     totEMG_bcp = [];
     respLR = [];     % participant response, 1 = left, 2 = right % used to check too slow
     corrLR = [];     % correct response, 1 = left, 2 = right % used to check too slow
     TiltSSVEP= [];   % first tilt used for SSVEP
@@ -47,7 +48,7 @@ function [] = TLB1_AllBehaviour(exp)
             filename = [exp.name num2str(sub) '_' num2str(block) '.mat'];
             disp(['Extracting behaviour data for subject ' filename '...'])
 
-            [Contrast Muscle Perf Rt EVtime TotEMG RespLR CorrLR FirstTilt] = TLB1_get_trial_data(filename,exp);
+            [Contrast Muscle Perf Rt EVtime TotEMG TotEMG_BCP RespLR CorrLR FirstTilt] = TLB1_get_trial_data(filename,exp);
 
 
 
@@ -58,6 +59,7 @@ function [] = TLB1_AllBehaviour(exp)
             rt = [rt; Rt'];         % response time of trial (in seconds)
             evshowtime =[evshowtime; EVtime'];   % 0.2sec additional time after response
             totEMG = [totEMG; TotEMG'];     % total EMG, concatenation of baseline, trial, post
+            totEMG_bcp = [totEMG_bcp; TotEMG_BCP']
             respLR = [respLR; RespLR'];     % participant response, 1 = left, 2 = right % used to check too slow
             corrLR = [corrLR; CorrLR'];     % correct response, 1 = left, 2 = right % used to check too slow
             TiltSSVEP= [TiltSSVEP; FirstTilt'];   % first tilt used for SSVEP
@@ -78,7 +80,7 @@ T_AllBehaviour = array2table(AllBehaviour, 'VariableNames', Varable_name);
     
     
  % save as .mat file   
-    save([exp.behpath exp.name '_ALL_include_EMG' ],'AllBehaviour','totEMG');
+    save([exp.behpath exp.name '_ALL_include_EMG' ],'AllBehaviour','totEMG','totEMG_bcp');
 % Write to a CSV file
 writetable(T_AllBehaviour, [exp.behpath exp.name '_ALL_ForR.csv']);
     disp(['Saved for' exp.name '_ALL_ for_R/ EMG' '.csv and .mat'])
