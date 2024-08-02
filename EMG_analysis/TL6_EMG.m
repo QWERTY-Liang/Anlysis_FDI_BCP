@@ -41,9 +41,10 @@ load TL_ALL_include_EMG% in EMGfolder
 %partial brust: 3
 
 %trial_to_plot=trial_to_plot+1;
-trial_to_plot=9;
+trial_to_plot=61;
 delay=60;
-fs=2000;
+fs=2000; % FDI 频率为2000
+fs_bcp=2000;% BCP 频率为1926
 rt=AllBehaviour_new(trial_to_plot,6);
 evendt=AllBehaviour_new(trial_to_plot,7);
 % length(totEMG_bcp{trial_to_plot, 2})
@@ -51,12 +52,12 @@ evendt=AllBehaviour_new(trial_to_plot,7);
 
 figure;
 time=(1:length(totEMG{trial_to_plot, 2})+length(totEMG{trial_to_plot, 3}))/fs;
-time_bcp=(1:length(totEMG_bcp{trial_to_plot, 2})+length(totEMG_bcp{trial_to_plot, 3}))/fs;
+time_bcp=(1:length(totEMG_bcp{trial_to_plot, 2})+length(totEMG_bcp{trial_to_plot, 3}))/fs_bcp;
 % Plot totEMG
 subplot(2, 1, 1);
 plot(time, [totEMG{trial_to_plot, 2};totEMG{trial_to_plot, 3}]);
 ylim([-2e-3,2e-3])
-xlim([0,2.5])
+%xlim([0,2.5])
 hold on;
 xline(([0, 800, 1500,2000,rt*1000,evendt*1000]+delay)/1000, '--r', { 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s','RT','EVend'});
 title(['FDI - ' num2str(trial_to_plot)]);
@@ -66,7 +67,7 @@ hold off
 subplot(2, 1, 2);
 plot(time_bcp, [totEMG_bcp{trial_to_plot, 2};totEMG_bcp{trial_to_plot, 3}]);
 title(['BCP - ' num2str(trial_to_plot)]);
-xlim([0,2.5])
+%xlim([0,2.5])
 ylim([-2e-3,2e-3])
 xline(([0, 800, 1500,2000,rt*1000,evendt*1000]+delay)/1000, '--r', { 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s','RT','EVend'});
 
@@ -76,8 +77,8 @@ xline(([0, 800, 1500,2000,rt*1000,evendt*1000]+delay)/1000, '--r', { 'evidence o
 
  % 设计带通滤波器
     fs = 2000; % 假设采样频率为1000 Hz，根据你的实际情况调整
-    low_cutoff = 20; % 低截止频率
-    high_cutoff = 250; % 高截止频率
+    low_cutoff = 50; % 低截止频率
+    high_cutoff = 150; % 高截止频率
     filter_order = 4; % 滤波器阶数
     
     % 设计FIR带通滤波器
@@ -87,7 +88,8 @@ xline(([0, 800, 1500,2000,rt*1000,evendt*1000]+delay)/1000, '--r', { 'evidence o
 
 
 
-data_pre=[totEMG{trial_to_plot, 2};totEMG{trial_to_plot, 3}];% 读取数据
+data_pre=[totEMG_bcp{trial_to_plot, 2};totEMG_bcp{trial_to_plot, 3}(1:1000,:)];% 读取数据
+time_pre=(1:length(data_pre))/fs;
 
 window_size=100;
 step_size=10;
@@ -118,7 +120,7 @@ xline(([0, 800, 1500,2000,rt*1000,evendt*1000]+delay)/1000, '--r', { 'evidence o
 title(['FDI - ' num2str(trial_to_plot)]);
 hold off
 subplot(2, 1, 2);
-plot(time, [totEMG{trial_to_plot, 2};totEMG{trial_to_plot, 3}]);
+plot(time_pre, data_pre);
 ylim([-2e-3,2e-3])
 xlim([0,2.5])
 hold on;
