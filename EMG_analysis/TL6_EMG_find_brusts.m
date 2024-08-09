@@ -41,7 +41,7 @@ load([exp.behpath exp.name '_ALL_FuzzEn'])
 %%
 % Parameters
 smoothing_window = 5; % Window size for smoothing (adjust as needed)
-threshold_factor_L = 1.2; % Factor to determine the threshold based on the mean of the data
+threshold_factor_L = 1.5; % Factor to determine the threshold based on the mean of the data
 threshold_factor_R = 1.5;% 左边信号质量都差，所以右边可以更严格阈值
 
 % Initialize arrays to store movement information for both hands
@@ -105,7 +105,7 @@ end
 % end
 
 % Optional: plot the results for a specific trial
-trial_to_plot = 6000; % Choose a specific trial to plot
+trial_to_plot = 1269; % Choose a specific trial to plot
 rt=AllBehaviour_new(trial_to_plot,6);% matlab 记录的反应时间
 figure;
 % Plot left-hand entropy with blue color
