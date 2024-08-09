@@ -38,4 +38,6 @@ TLB1_AllBehaviour(exp);
 % at EMG raw path
 %%
 % then modeling DDM, change the drift rate/boundary
+addpath(genpath(exp.finalpath));
 
+load TL_ALL_include_EMG_updated.mat% EMG missing BCP totEMG

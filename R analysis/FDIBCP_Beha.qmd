@@ -96,10 +96,10 @@ no clear difference in acc between FDI and BCP
 
 ```{r}
 #extract data
-FDI_C <- DT[muscle_used=="1",
+FDI_C <- DT[muscle_used=="1" ,
                      sum( (respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
 
-BCP_C <- DT[muscle_used=="2",
+BCP_C <- DT[muscle_used=="2" ,
                      sum( (respLR == corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
 
 FDI_W <- DT[muscle_used=="1",
@@ -160,7 +160,7 @@ R_C <- DT[respLR=="2" , #right correct
 L_W <- DT[respLR=="1" , #left wrong
                      sum( (respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
 
-R_W <- DT[muscle_used=="2", #right Wrong
+R_W <- DT[respLR=="2", #right Wrong
                      sum( (respLR != corrLR &  perf != "5" &  perf != "3" &  perf != "4"))] 
 
 L_Acc <- L_C/(L_C+L_W)
@@ -194,8 +194,8 @@ plot histgram (no observious difference)
 
 ```{r}
 #extract data 
-FDI_RT <- DT[muscle_used=="1"  ]$rt
-BCP_RT <- DT[muscle_used=="2"  ]$rt
+FDI_RT <- DT[muscle_used=="1" &rt<"1.8"&  perf != "5" &  perf != "3" &  perf != "4" ]$rt
+BCP_RT <- DT[muscle_used=="2"&rt<"1.8"&  perf != "5" &  perf != "3" &  perf != "4" ]$rt
 
 
 # Build dataset to plot
@@ -207,7 +207,7 @@ data_FDIBCP_RT <- data.frame(
 # Represent it
 p <- data_FDIBCP_RT %>%
   ggplot( aes(x=value, fill=type)) +
-    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    geom_histogram( binwidth=0.06,color="#e9ecef", alpha=0.6, position = 'identity') +
     scale_fill_manual(values=c("#69b3a2", "#404080")) +
     theme_ipsum() +
     labs(fill="")+
@@ -261,7 +261,7 @@ data_FDIBCP_RT_C <- data.frame(
 # Represent it
 p <- data_FDIBCP_RT_C %>%
   ggplot( aes(x=value, fill=type)) +
-    geom_histogram( binwidth=0.05,color="#e9ecef", alpha=0.6, position = 'identity') +
+    geom_histogram( binwidth=0.06,color="#e9ecef", alpha=0.6, position = 'identity') +
     scale_fill_manual(values=c("#69b3a2", "#404080")) +
     theme_ipsum() +
     labs(fill="")+
