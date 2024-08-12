@@ -334,7 +334,7 @@ end
 
 %% Mu/beta waveforms
 
-ch = [115+1 54+1];%[6 35]%[116 55]; % select left/right channels - typically D19 and B22, and that's the case here
+ch = [115 54];%[6 35]%[116 55]; % select left/right channels - typically D19 and B22, and that's the case here
 figure; hold on
 %correct+
 h1=plot(Ts,(avMB1(ch(2),:)+avMB2(ch(1),:))/2,'r'); % contralateral to correct side
