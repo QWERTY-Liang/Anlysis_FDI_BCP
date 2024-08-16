@@ -58,11 +58,11 @@ for trial_to_plot = 1:size(FuzzEn, 1)
 %%%两种肌肉不同阈值
 FDIorBCP=AllBehaviour_new(trial_to_plot,4); %1为用了FDI, 2 为BCP
 if FDIorBCP==1
-threshold_factor_L = 1.5; % Factor to determine the threshold based on the mean of the data
-threshold_factor_R = 1.7;% 左边信号质量都差，所以右边可以更严格阈值
+threshold_factor_L = 1.3; % Factor to determine the threshold based on the mean of the data
+threshold_factor_R = 1.5;% 左边信号质量都差，所以右边可以更严格阈值
 
 elseif FDIorBCP==2
-threshold_factor_L = 4; % Factor to determine the threshold based on the mean of the data
+threshold_factor_L = 1.155; % Factor to determine the threshold based on the mean of the data
 threshold_factor_R = 1.7;% 左边信号质量都差，所以右边可以更严格阈值
 
 end
@@ -91,8 +91,8 @@ end
         threshold_right=0.08;%如果信号很稳定，设置最低阈值
 
     end
-        if threshold_left<0.08
-       threshold_left=0.08;
+        if threshold_left<0.1
+       threshold_left=0.1;
     end
 
 
@@ -114,12 +114,13 @@ end
     
     % Record the start and end times for each detected segment
     movement_start_times_left{trial_to_plot} = FuzzEn{trial_to_plot, 3}(starts_left);
-    movement_end_times_left{trial_to_plot} = FuzzEn{trial_to_plot, 3}(ends_left);
+    %movement_end_times_left{trial_to_plot} = FuzzEn{trial_to_plot, 3}(ends_left);
     movement_start_times_right{trial_to_plot} = FuzzEn{trial_to_plot, 3}(starts_right);
-    movement_end_times_right{trial_to_plot} = FuzzEn{trial_to_plot, 3}(ends_right);
+    %movement_end_times_right{trial_to_plot} = FuzzEn{trial_to_plot, 3}(ends_right);
 end
 
-
+% Save as .mat file
+save([exp.behpath exp.name 'EMG_brusts'], 'movement_counts_left','movement_counts_right','movement_start_times_left','movement_start_times_right');
 
 % % Display the results for each trial
 % for trial_to_plot = 1:size(FuzzEn, 1)
@@ -181,7 +182,7 @@ end
 
 
 %% 多幅图同时画
-selected_rows =16+[1, 2, 3, 4, 5, 6,7,8]; 
+selected_rows =6000+[1, 2, 3, 4, 5, 6,7,8]; 
 
 % Create a new figure for the subplots
 figure;
@@ -257,8 +258,10 @@ end
 
 %% 检查可用trial数
 sum((movement_counts_right==1 | movement_counts_right==2))
-sum(movement_counts_left==1 | movement_counts_left==2| movement_counts_left==3)
+sum(movement_counts_left==1 | movement_counts_left==2)
 
 
 sum(movement_counts_right==0)
 sum(movement_counts_left==0)
+
+

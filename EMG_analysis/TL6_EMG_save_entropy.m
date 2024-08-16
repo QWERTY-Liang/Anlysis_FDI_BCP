@@ -48,6 +48,19 @@ load TL_ALL_include_EMG% in EMGfolder
     bp_filter = designfilt('bandpassfir', 'FilterOrder', filter_order, ...
                            'CutoffFrequency1', low_cutoff, 'CutoffFrequency2', high_cutoff, ...
                            'SampleRate', fs);
+
+
+
+    f0_50Hz = 50; % Frequency to notch (in Hz)
+Q = 35; % Quality factor (higher value means a narrower notch)
+
+% Design the 50 Hz notch filter
+notchFilter_50Hz = designfilt('bandstopiir', ...
+                              'FilterOrder', 2, ...
+                              'HalfPowerFrequency1', f0_50Hz*(sqrt(2)/(2*Q)), ...
+                              'HalfPowerFrequency2', f0_50Hz*(sqrt(2)/(2*Q)) * (Q+1)/Q, ...
+                              'DesignMethod', 'butter', ...
+                              'SampleRate', fs);
 %%%需要调参
 window_size=250;%越大约平滑，但是时间准确度变低
 step_size=5;%越大数据点越密集，方便后续处理，但计算时间变长
@@ -56,11 +69,14 @@ fs=2000; % FDI 频率为2000
 fs_bcp=2000;% BCP 频率为1926
 
     %% 1174 1175 1176  EMG wrong
+    
 % % Preallocate a temporary structure to store the results
 FuzzEn_temp = struct('FuzzEn1', cell(6144, 1), 'FuzzEn2', cell(6144, 1), 'time_vector', cell(6144, 1));
+N = 6144;
+%parfor_progress(N); % Initialize 进度条
+%Jeremy (2024). Progress monitor (progress bar) that works with parfor (https://www.mathworks.com/matlabcentral/fileexchange/32101-progress-monitor-progress-bar-that-works-with-parfor), MATLAB Central File Exchange. Retrieved August 15, 2024.
 
-
-parfor trial_to_plot = 1:6144
+parfor (trial_to_plot = 1:N,10)%最大核心数6
     % Initialize variables
     data_pre = [];
     filtered_data = [];
@@ -89,6 +105,9 @@ parfor trial_to_plot = 1:6144
     data = data_pre(:, 1); 
     data2 = data_pre(:, 2);
 
+ % Apply filter notch
+    data = filtfilt(notchFilter_50Hz, data);
+    data2 = filtfilt(notchFilter_50Hz, data2);
     % Apply filter
     filtered_data = filtfilt(bp_filter, data);
     filtered_data2 = filtfilt(bp_filter, data2);
@@ -104,9 +123,14 @@ parfor trial_to_plot = 1:6144
     FuzzEn_temp(trial_to_plot).FuzzEn1 = FuzzEn1;
     FuzzEn_temp(trial_to_plot).FuzzEn2 = FuzzEn2;
     FuzzEn_temp(trial_to_plot).time_vector = time_vector;
-end
 
+
+    %parfor_progress; % Count计数进度条
+end
+%parfor_progress(0); % Clean up进度条
 % Transfer results from FuzzEn_temp to FuzzEn
+
+
 FuzzEn = cell(6144, 3);
 for trial_to_plot = 1:6144
     FuzzEn{trial_to_plot, 1} = FuzzEn_temp(trial_to_plot).FuzzEn1;
