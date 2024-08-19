@@ -60,7 +60,7 @@ inputData = [EEG1.epoch(e).eventtype(1,:)];
 if default(1)=='S'
 targetValue = '6';
 elseif default(1) =='R'
-    targetValue = '10';
+    targetValue = '6';
 
 end
 
@@ -92,20 +92,20 @@ inputData_RL = [EEG1.epoch(e).eventtype(1,:)];
 
 % 目标值
 
-targetValue_RL = '6';
+targetValue_RL = '10';
 
 
 % 查找目标值的位置并存储索引
 t.lidots_idx_RL = [];
 for i = 1:length(inputData_RL)
-    if strcmp(inputData_RL{i}, targetValue)
+    if strcmp(inputData_RL{i}, targetValue_RL)
         t.lidots_idx_RL = [t.lidots_idx_RL, i];  % 如果找到目标值，将索引添加到idx数组
     end
 end
 
    % t.lidots_idx = cell2mat([EEG1.epoch(e).eventtype(1,:)]) == '6';
     t.lidots_time_RL = cell2mat([EEG1.epoch(e).eventlatency(1,t.lidots_idx_RL)]);
-    t.actionBaseline = [t.lidots_time_RL-188, t.lidots_time_RL]; %188is 4*SSVEP 21.5Hz
+    t.actionBaseline = [t.lidots_time_RL-188-60-90, t.lidots_time_RL-60-90]; %188is 4*SSVEP 21.5Hz
     t.actionBaseline_idx = ([EEG1.times] >= t.actionBaseline(1) & [EEG1.times] <= t.actionBaseline(end));    
     t.actionBaseline = mean(EEG1.data(:,t.actionBaseline_idx,e),2);
     

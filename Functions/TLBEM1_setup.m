@@ -1,7 +1,7 @@
 function [exp] = TLBF1_setup(exp); 
 
-addpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis\Functions');
-cd('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis');
+addpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2\Functions');
+cd('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2');
 
 exp.name            = 'TL';
 
