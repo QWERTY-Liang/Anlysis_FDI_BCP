@@ -13,7 +13,7 @@
 clc
 clear
 addpath('G:\My Drive\Phd\EEGLAB\eeglab-develop');% EEGlab toolbox
-addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_2'));% current folder
+addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2'));% current folder
 
 %% Set experimental analysis parameters
 exp.sub_id = [1,2,3,4,5,6];
@@ -222,8 +222,11 @@ for e = 2%1:2
          [EEG1 EEG2] = TLBF2_baselineData(sub,exp, EEG, epoch); %Calculate baselines and save in a single data file; by default, subtract pre-Pulse/stlmu for 'SL' per-action for RL
        %tbt2里面改了，129-136全为坏电极默认，这步后无外接电极
        %每个人1024有8个trial左右扔掉，可以更严格
+       disp('1')
          TLBF2_cleanEpochs(sub,exp,EEG1); % Threshold; remove epochs with > 150uV drifts in any channel
+          disp('2')
        TLBF2_cleanEpochs(sub,exp,EEG2);
+       disp('3')
     end
 end
 
@@ -245,7 +248,7 @@ end
 %% STEP 7-9: Morlet - wavelet transform 
 % here use TBT toolbox and CSD without baseline correction
 %坏道在tbt toolbox 中自动保存，已改toolbox
-for e = 1:2
+for e =2% 1:2
     epoch = exp.epochs{e};
     for sub = exp.sub_id(1:end)
 
