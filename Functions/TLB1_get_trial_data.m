@@ -5,7 +5,7 @@ load([exp.behpath  filename]);
 
 
 Contrast = par.deltaC(par.cond);%0.07/0.14
-Muscle=par.muscleorder;% 1=FDI 2-BCP
+Muscle=expected_muscle;% par.muscleorder记录错误，永远为1 然后2;% 1=FDI 2-BCP
 Perf = perf;%(1=correct, 2=error, 4=no response, 3 too early, 6 slow, 5 wrong muscle)
 Rt = ThresholdTime - EvOn_time;
 EVtime= evoff - EvOn_time;% 

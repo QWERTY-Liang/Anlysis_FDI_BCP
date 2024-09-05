@@ -8,7 +8,7 @@
 clc
 clear all
 addpath('G:\My Drive\Phd\EEGLAB\eeglab-develop');% EEGlab toolbox
-addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis'));% current folder
+addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2'));% current folder
 
 %% Set experimental analysis parameters
 exp.sub_id = [1,2,3,4,5,6];
@@ -43,7 +43,7 @@ load TL_ALL_include_EMG% in EMGfolder
 
 %trial_to_plot=trial_to_plot+1;
 trial_to_plot=7;
-delay=60;
+delay=10;
 fs=2000; % FDI 频率为2000
 fs_bcp=2000;% BCP 频率为1926
 rt=AllBehaviour_new(trial_to_plot,6);% matlab 记录的反应时间

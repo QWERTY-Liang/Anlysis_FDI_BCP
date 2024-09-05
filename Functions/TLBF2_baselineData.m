@@ -105,7 +105,7 @@ end
 
    % t.lidots_idx = cell2mat([EEG1.epoch(e).eventtype(1,:)]) == '6';
     t.lidots_time_RL = cell2mat([EEG1.epoch(e).eventlatency(1,t.lidots_idx_RL)]);
-    t.actionBaseline = [t.lidots_time_RL-188-60-90, t.lidots_time_RL-60-90]; %188is 4*SSVEP 21.5Hz
+    t.actionBaseline = [t.lidots_time_RL-188-90, t.lidots_time_RL-90]; %188is 4*SSVEP 21.5Hz
     t.actionBaseline_idx = ([EEG1.times] >= t.actionBaseline(1) & [EEG1.times] <= t.actionBaseline(end));    
     t.actionBaseline = mean(EEG1.data(:,t.actionBaseline_idx,e),2);
     

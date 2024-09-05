@@ -8,7 +8,7 @@
 clc
 clear all
 addpath('G:\My Drive\Phd\EEGLAB\eeglab-develop');% EEGlab toolbox
-addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis'));% current folder
+addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2'));% current folder
 
 %% Set experimental analysis parameters
 exp.sub_id = [1,2,3,4,5,6];
@@ -182,7 +182,7 @@ save([exp.behpath exp.name 'EMG_brusts'], 'movement_counts_left','movement_count
 
 
 %% 多幅图同时画
-selected_rows =6000+[1, 2, 3, 4, 5, 6,7,8]; 
+selected_rows =130+[1, 2, 3, 4, 5, 6,7,8]; 
 
 % Create a new figure for the subplots
 figure;
@@ -192,12 +192,13 @@ for i = 1:length(selected_rows)
     %
     trial_to_plot= row; %画EMG原始信号
     
-    delay=0; %由于延迟所有EVon等推迟60毫秒，而真实rt要-60，EMG时表现为所有marker后移60，rt不变
+    delay=5; %由于延迟所有EVon等推迟60毫秒，而真实rt要-60，EMG时表现为所有marker后移60，rt不变
 fs=2000; % FDI 频率为2000
 fs_bcp=2000;% BCP 频率为1926
 rt=AllBehaviour_new(trial_to_plot,6);% matlab 记录的反应时间
 FDIorBCP=AllBehaviour_new(trial_to_plot,4); %1为用了FDI, 2 为BCP
 evendt=AllBehaviour_new(trial_to_plot,7);%trial结束时间
+FDIorBCP=3-FDIorBCP;
 if FDIorBCP==1
 data_pre=abs([totEMG{trial_to_plot, 2};totEMG{trial_to_plot, 3}(1:1000,:)]);
 ybound=[0,2e-3];
@@ -219,10 +220,10 @@ time_pre=(1:length(data_pre))/fs;
     subplot(4, 2, i); % Arrange subplots in a 2x2 grid
     
     % Plot first column as red
-    plot(time_vector, data1, 'r', 'LineWidth', 1.5);
+    plot(time_vector, data1, 'r', 'LineWidth', 0.5);
     hold on;
     % Plot second column as blue
-    plot(time_vector, data2, 'b', 'LineWidth', 1.5);
+    plot(time_vector, data2, 'b', 'LineWidth', 0.5);
 
     % Plot detected start and end points for the left hand with green and magenta lines
 
