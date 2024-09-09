@@ -27,8 +27,3 @@ m=2;r=0.25;
     end
 end
 
-function output = my_processing_function(data)
-    % 这里是你自己的处理程序，输入为data，输出为output
-    % 你可以在这里添加你的代码
-    output = data; % 示例：简单地返回输入数据
-end
