@@ -172,6 +172,32 @@ load([exp.behpath exp.name 'EMG_Vaild_check'])%行为数据
 % Selected rows to plot (e.g., rows 1, 2, 3, and 4)
 selected_rows = 48+[1, 2, 3, 4, 5, 6,7,8,9,10,11,12,13,14,15];
 %results=AllBehaviour(5081,5) %太快太慢错肌肉？
+%滤波
+%
+    fs = 2000; % 假设采样频率为1000 Hz，根据你的实际情况调整
+    low_cutoff = 50; % 低截止频率
+    high_cutoff = 150; % 高截止频率
+    filter_order = 4; % 滤波器阶数
+    
+    % 设计FIR带通滤波器
+    bp_filter = designfilt('bandpassfir', 'FilterOrder', filter_order, ...
+                           'CutoffFrequency1', low_cutoff, 'CutoffFrequency2', high_cutoff, ...
+                           'SampleRate', fs);
+
+
+
+    f0_50Hz = 50; % Frequency to notch (in Hz)
+Q = 35; % Quality factor (higher value means a narrower notch)
+
+% Design the 50 Hz notch filter
+notchFilter_50Hz = designfilt('bandstopiir', ...
+                              'FilterOrder', 2, ...
+                              'HalfPowerFrequency1', f0_50Hz*(sqrt(2)/(2*Q)), ...
+                              'HalfPowerFrequency2', f0_50Hz*(sqrt(2)/(2*Q)) * (Q+1)/Q, ...
+                              'DesignMethod', 'butter', ...
+                              'SampleRate', fs);
+
+
 % Create a new figure for the subplots
 figure;
 
@@ -202,18 +228,27 @@ for i = 1:length(selected_rows)
     %
 
     % Extract data from FuzzEn
-    data1 = FuzzEn{row, 1};
-    data2 = FuzzEn{row, 2};
+    data11 = FuzzEn{row, 1};
+    data22 = FuzzEn{row, 2};
     time_vector = FuzzEn{row, 3};
 
+        % Separate data channels
+    data1 = data_pre(:, 1); 
+    data2 = data_pre(:, 2);
+ % Apply filter notch
+    data1 = filtfilt(notchFilter_50Hz, data1);
+    data2 = filtfilt(notchFilter_50Hz, data2);
+    % Apply filter
+    data1 = filtfilt(bp_filter, data1);
+    data2 = filtfilt(bp_filter, data2);
     % Create a subplot for each selected row
     subplot(5, 3, i); % Arrange subplots in a 2x2 grid
 
     % Plot first column as red
-    plot(time_vector, data1, 'r');
+    plot(time_vector, data11, 'r');
     hold on;
     % Plot second column as blue
-    plot(time_vector, data2, 'b');
+    plot(time_vector, data22, 'b');
     % Add labels and legend
     xlabel('Time (s)');
     ylabel('Fuzzy Entropy');
@@ -221,8 +256,8 @@ for i = 1:length(selected_rows)
 
     % Plot additional data as green on right y-axis
     yyaxis right
-    plot(time_pre, data_pre(:,1), '-m');
-    plot(time_pre, data_pre(:,2), '-c');
+    plot(time_pre, data1, '-m');
+    plot(time_pre, data2, '-c');
     ylim(ybound)
     ylabel('Raw EMG');
     legend('left', 'right','left raw','right raw','AutoUpdate', 'off');
@@ -241,3 +276,5 @@ for i = 1:length(selected_rows)
 
     hold off;
 end
+
+

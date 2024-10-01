@@ -3,7 +3,9 @@ function [] = TLBF2_runICA(sub,exp,EEG)
 %Lowpass filter eye channels; not done before - if noisy, ICA is not clean
 % EEG1 = pop_eegfiltnew(EEG, 'locutoff', 1, 'plotfreqz',1,'channels',[]);
 
-EEG1 = EEG; 
+% EEG1 = EEG; 这里加1Hz滤波提高ICA质量
+EEG1 = pop_basicfilter(EEG, 1:exp.nEEGchans, 'Cutoff', 1, 'Design', 'butter', 'Filter', 'highpass', 'Boundary', [], 'order', 4);
+
 [EEG1] = pop_resample(EEG1,128); %Try downsampling just for ICA
 
 EEG1 = EEG;

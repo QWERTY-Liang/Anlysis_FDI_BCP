@@ -1,5 +1,5 @@
 function results = TL6_sliding_window(datafull, window_size, step_size)
-m=2;r=0.25;   
+m=2;r=0.4;   
 % 获取datafull的长度
     data_length = length(datafull);
     

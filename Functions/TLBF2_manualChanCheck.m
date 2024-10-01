@@ -18,7 +18,7 @@ function [] = TLBF2_manualChanCheck(sub,exp,EEG1, EEG2)
 exp.ImportantChans = [4 19 85 54 115]; % electrodes around CPz (where CPP is), Fz (CNV) and left and right motor cortex (see 'cap_128_layout_medium.jpg')
 % Also mark front-most channels:
 exp.FrontChans = [71 72 80 81 93 94 103 70 73 79 82 92 95 102]; % at the very front edge SD can be high not necessarily because channels are bad but because person is blinking /moving eyes. We don't want to interpolate GOOD electrodes that later will HELP us pick up artifacts that we want to throw out.
-exp.rerefchan = [1]; % pick a channel to re-reference the data to and get a second picture of variance across channels - important just because sometimes the reference used to load the EEG might itself have been bad during the recording...
+exp.rerefchan = [19]; % pick a channel to re-reference the data to and get a second picture of variance across channels - important just because sometimes the reference used to load the EEG might itself have been bad during the recording...
 
 % Load in the epoched data
 % EEG = pop_loadset([exp.filepath '/P1_fatmc' (exp.name) '_P1.set']);
@@ -31,14 +31,14 @@ conc = reshape(EEG1.data(1:exp.nEEGchans,:,:),[exp.nEEGchans,size(EEG1.data,2)*s
 % So it's worth also looking at SD when referenced to somewhere else - electrode Oz (23) for example - just to make sure you haven't missed any bad channels
 conc2 = conc - repmat(conc(exp.rerefchan,:),[exp.nEEGchans,1]);
 for q=1:exp.nEEGchans % include externals here as well, because it might be a good idea to check whether those are noisy too
-    SD(q,1) = std(conc(q,:)); % measure S.D. of each channel
-    SD2(q,1) = std(conc2(q,:));
+    SD(q,1) = std(conc(q,:))/100; % measure S.D. of each channel
+    SD2(q,1) = std(conc2(q,:))/100;
 end
 
 % Are there any channels that stick out in terms of standard deviation?
 % To check, plot the SD per channel:
-figure; 
-subplot(2,1,1); hold on; plot(SD(1:exp.nEEGchans,:)); ylim([0 200]) % we only plot the channels in the cap because external electrodes are often higher variance (e.g. you might be recording EMG) and annoyingly set the scale so you always have to zoom in, and the purpose here is to identify channels for interpolation which is ALWAYS only the 128 cap channels
+figure
+subplot(2,1,1); hold on; plot(SD(1:exp.nEEGchans,:));% ylim([0 200]) % we only plot the channels in the cap because external electrodes are often higher variance (e.g. you might be recording EMG) and annoyingly set the scale so you always have to zoom in, and the purpose here is to identify channels for interpolation which is ALWAYS only the 128 cap channels
 %title(['subject ' num2str(s) ' ' allsubj{s}])
 % mark the important channels specified above - this is just a visual aid to know which you should particularly consider
 for e=1:length(exp.ImportantChans)
@@ -57,7 +57,7 @@ for e=1:length(exclCandidates)
     plot([1 1]*exclCandidates(e),[0 max(SD(exclCandidates(e),:))],'r'); % candidate noisy channels in RED
 end
 
-subplot(2,1,2); hold on; plot(SD2(1:exp.nEEGchans,:)); ylim([0 200])
+subplot(2,1,2); hold on; plot(SD2(1:exp.nEEGchans,:)); %ylim([0 200])
 % mark the important channels specified above - this is just a visual aid to know which you should particularly consider
 for e=1:length(exp.ImportantChans)
     plot([1 1]*exp.ImportantChans(e),[0 max(SD(exp.ImportantChans(e),:))],'b'); 

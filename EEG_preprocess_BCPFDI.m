@@ -1,4 +1,8 @@
 %%--------------------------------------------------------------------------------------------
+%Ver 2.0 26/Sep 2024
+% 1.STEP 3.5:加了EMGpnsite 的trigger '66'
+
+
 %to-update list
 %1. in annotate data, update trial ID and Meta data
 %2. 眨眼段标记去除
@@ -54,6 +58,22 @@ for sub = exp.sub_id(1:end)
     EEG = TLBF2_filter(sub,exp);
 end
 
+%% STEP 3.5: add triger for EMG_onsite upload
+
+for sub = exp.sub_id(1:end)
+    EEG = TLBF2_updateEMGtrigger(sub,exp);
+
+end
+
+
+%% test ICA
+% for sub = exp.sub_id(1)%:end)
+%     EEG = pop_loadset([exp.filepath exp.filterLab 'aac' exp.name num2str(sub) '.set']);
+%     EEG1 = TLBF2_prereReference(sub,exp,EEG);% 为ICA做准备
+%     TLBF2_runICA(sub,exp, EEG1);
+% end
+
+
 %% STEP 4: Epoch, detect bad channels & interpolate
 % The manualChanCheck function will plot the SD for all channels with the
 % online reference (upper plot) and re-referenced to POz (lower plot) just
@@ -81,7 +101,7 @@ for sub = exp.sub_id(1:end)
     clear EEG1; clear EEG2; close all;
 end
 %logbook for bad channel (100uV thresh)
-%TL1: 22  23  27  28  37  40
+%TL1: 22  23  27  28  37  40 for ver 2 (37) 
 %TL2: /
 %TL3: /
 %TL4: /
@@ -106,7 +126,7 @@ end
 % Finally, we create a trial structure that contains a list of all relevant
 % experimental factors we may want to group trials by. 
 
-for e =2%1:2
+for e =3%1:2
     epoch = exp.epochs{e}
     allRej = [];
     for sub = exp.sub_id(1:end)
@@ -161,7 +181,7 @@ end
 % click "Accept" on the pop up menu and save your corrected file by adding
 % a 'c' at the beginning of your original file (e.g. cICAtrial_eyeB...). 
 
-for e = 2%1:2
+for e = 3%1:2
     epoch = exp.epochs{e}
     for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
@@ -178,7 +198,7 @@ end
 % bug fixed: last 4 channel dropped (ICAlable evalc 被注释掉)
 
 
-for e = 2%1:2
+for e = 3%1:2
     epoch = exp.epochs{e}
     for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
@@ -211,31 +231,31 @@ end
 % keep a note of them. 
 
 
-for e = 2%1:2
+for e = 3%1:2
     epoch = exp.epochs{e};
     for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
         %     EEG = pop_loadset([exp.filepath 'ri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
         % elseif strcmp(epoch, 'RL')
-            EEG = pop_loadset([exp.filepath 'cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
+        EEG = pop_loadset([exp.filepath 'cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
         % end
-         [EEG1 EEG2] = TLBF2_baselineData(sub,exp, EEG, epoch); %Calculate baselines and save in a single data file; by default, subtract pre-Pulse/stlmu for 'SL' per-action for RL
-       %tbt2里面改了，129-136全为坏电极默认，这步后无外接电极
-       %每个人1024有8个trial左右扔掉，可以更严格
-       disp('1')
-         TLBF2_cleanEpochs(sub,exp,EEG1); % Threshold; remove epochs with > 150uV drifts in any channel
-          disp('2')
-       TLBF2_cleanEpochs(sub,exp,EEG2);
-       disp('3')
+        [EEG1 EEG2] = TLBF2_baselineData(sub,exp, EEG, epoch); %Calculate baselines and save in a single data file; by default, subtract pre-Pulse/stlmu for 'SL' per-action for RL
+        %tbt2里面改了，129-136全为坏电极默认，这步后无外接电极
+        %每个人1024有8个trial左右扔掉，可以更严格
+        disp('1')
+        TLBF2_cleanEpochs(sub,exp,EEG1); % Threshold; remove epochs with > 150uV drifts in any channel
+        disp('2')
+        TLBF2_cleanEpochs(sub,exp,EEG2);
+        disp('3')
     end
 end
 
 %% STEP 8: CSD filtering 
 % Relying on CSD toolbox (https://psychophysiology.cpmc.columbia.edu/software/csdtoolbox/)
 % Final step: Apply CSD transformation to the data 
-for e = 2%1:2
+for e = 3%1:2
     epoch = exp.epochs{e};
-    for sub = exp.sub_id(6)%1:end)
+    for sub = exp.sub_id(1:end)
 
          EEG = pop_loadset([exp.filepath 'ab_cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
         TLBF2_applyCSD(sub,exp, EEG)
@@ -246,15 +266,16 @@ for e = 2%1:2
 end
 
 %% STEP 7-9: Morlet - wavelet transform 
+%没有baseline的版本，为MB-analysis做准备
 % here use TBT toolbox and CSD without baseline correction
 %坏道在tbt toolbox 中自动保存，已改toolbox
-for e =2% 1:2
+for e =3% 1:2
     epoch = exp.epochs{e};
     for sub = exp.sub_id(1:end)
 
          EEG = pop_loadset([exp.filepath 'cICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
-        TLBF2_cleanEpochs(sub,exp,EEG); % Threshold; remove epochs with > 150uV drifts in any channel
-        EEG = pop_loadset([exp.filepath 'acICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
+        %TLBF2_cleanEpochs(sub,exp,EEG); % Threshold; remove epochs with > 150uV drifts in any channel
+        %EEG = pop_loadset([exp.filepath 'acICAri' epoch '_' exp.filterLab 'aac' exp.name num2str(sub) '.set']);
          TLBF2_applyCSD(sub,exp, EEG)
 
 

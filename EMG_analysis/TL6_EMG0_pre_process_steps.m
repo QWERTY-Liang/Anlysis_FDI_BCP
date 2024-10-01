@@ -1,0 +1,114 @@
+%%  6.1 EMG analysis
+% Author: Liang Tong
+% Date: 12/7/2024 
+
+%to update list
+%1.function all the code to make main script simplier
+%% Toolbox requirements: 
+clc
+clear all
+addpath('G:\My Drive\Phd\EEGLAB\eeglab-develop');% EEGlab toolbox
+addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2'));% current folder
+
+%% Set experimental analysis parameters
+exp.sub_id = [1,2,3,4,5,6];
+%exp.sub_id = [1];
+[exp] = TLBEM1_setup(exp);
+
+
+%% 1. Load rl_BB pre-cue-188
+% col 1: subject num
+% col 2: block num
+% col 3: contrast (high or low contrast)
+% col 4: muscle (1=FDI, 2=BCP)
+% col 5: trial outcome (1=correct, 2=error, 4=no response, 3 too early, 6 slow, 5 wrong muscle)
+% col 6: RT in sec
+% col 7: evshowtime =[]   % 0.2sec additional time after response
+% col 8: participant response, 1 = left, 2 = right 0= on response
+% col 9: correct response, 1 = left, 2 = right
+% col 10: first tilt used for SSVEP
+%证据前0.188秒 
+% cue前0.188秒 col:12
+% 整段平均 col:13
+% response 前0.188秒 col:14
+addpath(genpath(exp.finalpath));
+
+%load TL_ALL_include_EMG_updated.mat% EMG missing BCP totEMG
+
+load TL_ALL_include_EMG_1% in EMGfolder %这里的FDI和BCP才对 4 和44  %%bug 已修复
+
+%% 测试组单独画
+fs=2000;
+
+trials=3003;
+EMGdata=totEMG_bcp(trials,:);%这里手动改FDi还是BCP
+%TL6_plotEMGData(EMGdata, fs);
+%
+EMG_processed = TL6_preprocessEMG(EMGdata, fs);%预处理function
+TL6_plotEMGData(EMG_processed, fs);%画图function
+
+
+data_pre = [EMGdata{2}; EMGdata{3}(1:1000, :)];
+% Separate data channels
+    data = data_pre(:, 1); 
+    data2 = data_pre(:, 2);
+    window_size=250;%越大约平滑，但是时间准确度变低
+step_size=5;%越大数据点越密集，方便后续处理，但计算时间变长
+    % Compute Fuzzy Entropy using sliding window
+    FuzzEn1 = TL6_sliding_window(data, window_size, step_size); % m=2; r=0.25
+    FuzzEn2 = TL6_sliding_window(data2, window_size, step_size); % m=2; r=0.25
+
+    % Time vector
+    time_vector = ((1:length(FuzzEn1)) / length(FuzzEn1)) * (length(data) / fs);
+figure
+    % Plot first column as red
+    plot(time_vector, FuzzEn1, 'r');
+    hold on;
+    % Plot second column as blue
+    plot(time_vector, FuzzEn2, 'b');
+% Add labels and legend
+    xlabel('Time (s)');
+    ylabel('Fuzzy Entropy');
+
+    %% 保存预处理过的数据 (十几分钟)
+    fs=2000;
+     % totEMG_processed: 6144*3 cell array，储存每个trial处理后的EMG_processed
+%for FDI
+    % 初始化totEMG_processed，用于储存所有trial的处理结果
+    num_trials = size(totEMG, 1);  % 获取总的trial数
+    totEMG_processed = cell(num_trials, 3);  % 初始化一个6144×3的cell array
+
+    % 遍历所有的trial
+    parfor trial_idx = 1:num_trials
+        % 获取当前trial的EMG数据（1×3 cell array）
+        EMGdata = totEMG(trial_idx, :);
+
+        % 调用之前定义的EMG处理函数对当前trial的EMG数据进行处理
+        EMG_processed = TL6_preprocessEMG(EMGdata, fs);
+
+        % 将处理后的EMG数据存入totEMG_processed中
+        totEMG_processed(trial_idx, :) = EMG_processed;
+
+    end
+
+  disp('half finished')
+    %for BCP
+      
+  num_trials = size(totEMG_bcp, 1);  % 获取总的trial数
+    totEMG_bcp_processed = cell(num_trials, 3);  % 初始化一个6144×3的cell array
+
+    % 遍历所有的trial
+    parfor trial_idx = 1:num_trials
+        % 获取当前trial的EMG数据（1×3 cell array）
+        EMGdata = totEMG_bcp(trial_idx, :);
+
+        % 调用之前定义的EMG处理函数对当前trial的EMG数据进行处理
+        EMG_processed = TL6_preprocessEMG(EMGdata, fs);
+
+        % 将处理后的EMG数据存入totEMG_processed中
+        totEMG_bcp_processed(trial_idx, :) = EMG_processed;
+    end
+
+
+% Save as .mat file
+save([exp.behpath exp.name '_processedEMG_v2'], 'totEMG_processed','totEMG_bcp_processed');

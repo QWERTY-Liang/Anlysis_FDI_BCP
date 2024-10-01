@@ -37,7 +37,7 @@ addpath(genpath(exp.finalpath));
 
 load TL_ALL_include_EMG_1% in EMGfolder
 
-load([exp.behpath exp.name '_ALL_FuzzEn']) % sep 5 2024 version
+load([exp.behpath exp.name '_ALL_FuzzEn_processed']) % sep 5 2024 version
 %%
 % Parameters
 smoothing_window = 5; % Window size for smoothing (adjust as needed)
@@ -49,9 +49,9 @@ baselinewindow= 100;%调节平均熵阈值的长度
 movement_counts_left = zeros(size(FuzzEn, 1), 1); % Number of movements detected for the left hand
 movement_counts_right = zeros(size(FuzzEn, 1), 1); % Number of movements detected for the right hand
 movement_start_times_left = cell(size(FuzzEn, 1), 1); % Cell array to store start times for the left hand
-movement_end_times_left = cell(size(FuzzEn, 1), 1); % Cell array to store end times for the left hand
+%movement_end_times_left = cell(size(FuzzEn, 1), 1); % Cell array to store end times for the left hand
 movement_start_times_right = cell(size(FuzzEn, 1), 1); % Cell array to store start times for the right hand
-movement_end_times_right = cell(size(FuzzEn, 1), 1); % Cell array to store end times for the right hand
+%movement_end_times_right = cell(size(FuzzEn, 1), 1); % Cell array to store end times for the right hand
 
 for trial_to_plot = 1:size(FuzzEn, 1)
 
@@ -85,7 +85,7 @@ end
     % Determine thresholds based on the mean of the smoothed entropy
     threshold_left = mean(smoothed_entropy_left) * threshold_factor_L;% method 1 is mean
     threshold_right = mean(smoothed_entropy_right) * threshold_factor_R;% method 1 is mean
-    if threshold_right<0.16
+    if threshold_right<0.16%这里只是处理前信号使用
         threshold_right=0.16;%如果信号很稳定，设置最低阈值
 
     end

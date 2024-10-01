@@ -37,32 +37,38 @@ addpath(genpath(exp.finalpath));
 
 load TL_ALL_include_EMG_1% in EMGfolder %这里的FDI和BCP才对 4 和44  %%bug 已修复
 
-%%
-    fs = 2000; % 假设采样频率为1000 Hz，根据你的实际情况调整
-    low_cutoff = 50; % 低截止频率
-    high_cutoff = 150; % 高截止频率
-    filter_order = 4; % 滤波器阶数
-    
-    % 设计FIR带通滤波器
-    bp_filter = designfilt('bandpassfir', 'FilterOrder', filter_order, ...
-                           'CutoffFrequency1', low_cutoff, 'CutoffFrequency2', high_cutoff, ...
-                           'SampleRate', fs);
+load ([exp.behpath exp.name '_processedEMG']) % 更新1， EMG加了预处理
 
+clear totEMG totEMG_bcp
 
-
-    f0_50Hz = 50; % Frequency to notch (in Hz)
-Q = 35; % Quality factor (higher value means a narrower notch)
-
-% Design the 50 Hz notch filter
-notchFilter_50Hz = designfilt('bandstopiir', ...
-                              'FilterOrder', 2, ...
-                              'HalfPowerFrequency1', f0_50Hz*(sqrt(2)/(2*Q)), ...
-                              'HalfPowerFrequency2', f0_50Hz*(sqrt(2)/(2*Q)) * (Q+1)/Q, ...
-                              'DesignMethod', 'butter', ...
-                              'SampleRate', fs);
+totEMG=totEMG_processed;% 赋予新值
+totEMG_bcp=totEMG_bcp_processed;
+%% 注意使用预处理数据时不需要filter, 记得改代码
+%     fs = 2000; % 假设采样频率为1000 Hz，根据你的实际情况调整
+%     low_cutoff = 50; % 低截止频率
+%     high_cutoff = 150; % 高截止频率
+%     filter_order = 4; % 滤波器阶数
+% 
+%     % 设计FIR带通滤波器
+%     bp_filter = designfilt('bandpassfir', 'FilterOrder', filter_order, ...
+%                            'CutoffFrequency1', low_cutoff, 'CutoffFrequency2', high_cutoff, ...
+%                            'SampleRate', fs);
+% 
+% 
+% 
+%     f0_50Hz = 50; % Frequency to notch (in Hz)
+% Q = 35; % Quality factor (higher value means a narrower notch)
+% 
+% % Design the 50 Hz notch filter
+% notchFilter_50Hz = designfilt('bandstopiir', ...
+%                               'FilterOrder', 2, ...
+%                               'HalfPowerFrequency1', f0_50Hz*(sqrt(2)/(2*Q)), ...
+%                               'HalfPowerFrequency2', f0_50Hz*(sqrt(2)/(2*Q)) * (Q+1)/Q, ...
+%                               'DesignMethod', 'butter', ...
+%                               'SampleRate', fs);
 %%%需要调参
-window_size=250;%越大约平滑，但是时间准确度变低
-step_size=5;%越大数据点越密集，方便后续处理，但计算时间变长
+window_size=200;%越大约平滑，但是时间准确度变低
+step_size=5;%越小数据点越密集，方便后续处理，但计算时间变长
 delay=10;
 fs=2000; % FDI 频率为2000
 fs_bcp=2000;% BCP 频率为1926
@@ -75,11 +81,11 @@ N = 6144;
 %parfor_progress(N); % Initialize 进度条
 %Jeremy (2024). Progress monitor (progress bar) that works with parfor (https://www.mathworks.com/matlabcentral/fileexchange/32101-progress-monitor-progress-bar-that-works-with-parfor), MATLAB Central File Exchange. Retrieved August 15, 2024.
 
-parfor (trial_to_plot = 1:N,10)%最大核心数6
+parfor (trial_to_plot = 1:N,8)%最大核心数6
     % Initialize variables
     data_pre = [];
-    filtered_data = [];
-    filtered_data2 = [];
+    % filtered_data = [];
+    % filtered_data2 = [];
     time_vector=[];
 
     % Get the condition for FDIorBCP
@@ -104,19 +110,19 @@ parfor (trial_to_plot = 1:N,10)%最大核心数6
     data = data_pre(:, 1); 
     data2 = data_pre(:, 2);
 
- % Apply filter notch
-    data = filtfilt(notchFilter_50Hz, data);
-    data2 = filtfilt(notchFilter_50Hz, data2);
-    % Apply filter
-    filtered_data = filtfilt(bp_filter, data);
-    filtered_data2 = filtfilt(bp_filter, data2);
+ % % Apply filter notch
+ %    data = filtfilt(notchFilter_50Hz, data);
+ %    data2 = filtfilt(notchFilter_50Hz, data2);
+ %    % Apply filter
+ %    filtered_data = filtfilt(bp_filter, data);
+ %    filtered_data2 = filtfilt(bp_filter, data2);
 
     % Compute Fuzzy Entropy using sliding window
-    FuzzEn1 = TL6_sliding_window(filtered_data, window_size, step_size); % m=2; r=0.25
-    FuzzEn2 = TL6_sliding_window(filtered_data2, window_size, step_size); % m=2; r=0.25
+    FuzzEn1 = TL6_sliding_window(data, window_size, step_size); % m=2; r=0.25
+    FuzzEn2 = TL6_sliding_window(data2, window_size, step_size); % m=2; r=0.25
 
     % Time vector
-    time_vector = ((1:length(FuzzEn1)) / length(FuzzEn1)) * (length(filtered_data) / fs);
+    time_vector = ((1:length(FuzzEn1)) / length(FuzzEn1)) * (length(data) / fs);
 
     % Store results in FuzzEn_temp structure
     FuzzEn_temp(trial_to_plot).FuzzEn1 = FuzzEn1;
@@ -138,7 +144,7 @@ for trial_to_plot = 1:6144
 end
 
 % Save as .mat file
-save([exp.behpath exp.name '_ALL_FuzzEn'], 'FuzzEn','window_size','step_size');
+save([exp.behpath exp.name '_ALL_FuzzEn_processed'], 'FuzzEn','window_size','step_size');
 
 
 % Example usage:
@@ -152,9 +158,10 @@ save([exp.behpath exp.name '_ALL_FuzzEn'], 'FuzzEn','window_size','step_size');
 % parfor_progress(0); % Clean up
 
 %% plot for testing
-load([exp.behpath exp.name '_ALL_FuzzEn'])
-% Selected rows to plot (e.g., rows 1, 2, 3, and 4)
-selected_rows = 127+[1, 2, 3, 4, 5, 6]; 
+load([exp.behpath exp.name '_ALL_FuzzEn_processed'])
+load TL_ALL_include_EMG_1% in EMGfolder %这里的FDI和BCP才对 4 和44  %%bug 已修复
+%% Selected rows to plot (e.g., rows 1, 2, 3, and 4)
+selected_rows = 4127+[1, 2, 3, 4, 5, 6]; 
 
 % Create a new figure for the subplots
 figure;
@@ -206,7 +213,7 @@ time_pre=(1:length(data_pre))/fs;
     yyaxis right
     plot(time_pre, data_pre(:,1), '-m');
     plot(time_pre, data_pre(:,2), '-c');
-    ylim(ybound)
+    %ylim(ybound)
     ylabel('Raw EMG');
 legend('left', 'right','left raw','right raw','AutoUpdate', 'off');
 xline(([0, 800, 1500,2000,rt*1000,evendt*1000]+delay)/1000, '--k', { 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s','RT','EVend'});

@@ -8,7 +8,7 @@
 clc
 clear
 addpath('G:\My Drive\Phd\EEGLAB\eeglab-develop');% EEGlab toolbox
-addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis'));% current folder
+addpath(genpath('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2'));% current folder
 
 %% Set experimental analysis parameters
 exp.sub_id = [1,2,3,4,5,6];
