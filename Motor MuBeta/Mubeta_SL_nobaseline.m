@@ -16,7 +16,7 @@ exp.sub_id = [1,2,3,4,5,6];
 [exp] = TLBEM1_setup(exp);
 
 %% Run analysis
-eeglab
+%eeglab
 %% 1. Load rl_BB pre-cue-188
 % col 1: subject num
 % col 2: block num
@@ -40,9 +40,9 @@ fs=EEG.srate;%512
 t=EEG.times;
 erp=EEG.data;
 
-epoch_limits_msTG = [-188*4 188*12];    % Target-locked epoch. We could use the same windows as were used for artifact rejection, or we might want different windows here - if so, don't forget that artifacts were only checked for in the window specified in IdentifyBadTrials!
-tts = round(epoch_limits_msTG(1)/1000*fs):round(epoch_limits_msTG(2)/1000*fs); % hence get the list of sample points relative to a given event that we need to extract from the continuous EEG
-tt = tts*1000/fs; % hence timebase in milliseconds, for plotting etc
+% epoch_limits_msTG = [-188*4 188*12];    % Target-locked epoch. We could use the same windows as were used for artifact rejection, or we might want different windows here - if so, don't forget that artifacts were only checked for in the window specified in IdentifyBadTrials!
+% tts = round(epoch_limits_msTG(1)/1000*fs):round(epoch_limits_msTG(2)/1000*fs); % hence get the list of sample points relative to a given event that we need to extract from the continuous EEG
+% tt = tts*1000/fs; % hence timebase in milliseconds, for plotting etc
 % epoch_limits_msR =  [-188*3 188];    % Response-locked epoch; again using integer number of SSVEP cycles (1000/18.75 = 53.33)
 % trs = round(epoch_limits_msR(1)/1000*fs):round(epoch_limits_msR(2)/1000*fs); % hence get the list of sample points relative to a given event that we need to extract from the continuous EEG
 % tr = trs*1000/fs; % hence timebase in milliseconds
@@ -55,7 +55,7 @@ tt = tts*1000/fs; % hence timebase in milliseconds, for plotting etc
 fftlen = round(fs/21.5*6); % Window of how many sample points? If there is an SSVEP involved, whether or not you are interested in analyzing it, it is good to have all power related to the SSVEP isolated in a single frequency bin. This happens when you choose a window length that is an integer number of SSVEP cycles.
 F = [0:fftlen-1]*fs/fftlen; % frequency scale, given window length (remember resolution = 1/window-duration)
 ff = find((F>13 & F<21) | (F>22 & F<30)); % the indices of F that cover the spectral range/band of interest. Let's say we're interested in Mu and Beta bands combined. Note here I'm avoiding the SSVEP frequency (18.75hz in this example)
-Ts = [-188*4:47:188*12]; % in msec, centered on what times do you want to measure spectral amplitude? i.e., where to center each consecutive window in time
+Ts = [-188*2:47:188*6]; % in msec, centered on what times do you want to measure spectral amplitude? i.e., where to center each consecutive window in time
 % Tr = [-188*3:47:188]; % for response-locked
 
 % Now in the rest of the code in the loop, we turn to computing and averaging Mu/Beta amplitude
@@ -336,6 +336,7 @@ end
 
 ch = [115 54];%[6 35]%[116 55]; % select left/right channels - typically D19 and B22, and that's the case here
 figure; hold on
+
 %correct+
 h1=plot(Ts,(avMB1(ch(2),:)+avMB2(ch(1),:))/2,'r'); % contralateral to correct side
 h2=plot(Ts,(avMB1(ch(1),:)+avMB2(ch(2),:))/2,'--r');%(mean(avMB(ch(1),:,1,c,sbj),5)+mean(avMB(ch(2),:,2,c,sbj),5))/2,'--','Color',colours(c,:),'LineWidth',2) % ipsilateral (dashed)
