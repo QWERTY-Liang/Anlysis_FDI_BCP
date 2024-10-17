@@ -59,20 +59,20 @@ end
 %重新排序
 EEG = pop_editeventvals(EEG, 'sort', {'latency', [0]});
 
-%%保存和检查
-EEG = eeg_checkset( EEG );
-if exp.filter.lowerbound == 0.1
-    filename = ['f01' EEG.filename];
-elseif exp.filter.lowerbound == 0.01
-    filename = ['f' EEG.filename];
-end
+% %%保存和检查
+% EEG = eeg_checkset( EEG );
+% if exp.filter.lowerbound == 0.1
+%     filename = ['f01' EEG.filename];
+% elseif exp.filter.lowerbound == 0.01
+%     filename = ['f' EEG.filename];
+% end
 
-EEG.filename = filename;
+% EEG.filename = filename;
 
 %EEG = eeg_checkset( EEG );% Check the consistency of the merged dataset
 
 %filename = ['aac' exp.name num2str(sub)];
-EEG = pop_saveset(EEG, filename, exp.filepath);
+%EEG = pop_saveset(EEG, filename, exp.filepath);
 % Display success message
-disp(['File  ' filename '  saved successfully.']);
+disp(['EOL  added  successfully.']);
 end

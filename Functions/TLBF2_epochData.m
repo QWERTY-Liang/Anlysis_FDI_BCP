@@ -14,9 +14,14 @@ EEG1 = pop_saveset( EEG1,filename, exp.filepath);
 % filename=['RL_' EEG.filename];%EEG.filename = filename;
 % EEG2 = pop_saveset( EEG2,filename, exp.filepath);
 
-EEG2 = pop_epoch(EEG, {'66'}, exp.respEpoch, 'epochinfo', 'yes');
+% EEG2 = pop_epoch(EEG, {'66'}, exp.respEpoch, 'epochinfo', 'yes');
+% EEG2 = eeg_checkset( EEG2);
+% filename=['EoL_' EEG.filename];%EEG.filename = filename;
+% EEG2 = pop_saveset( EEG2,filename, exp.filepath);
+
+EEG2 = pop_epoch(EEG, {'55'}, exp.respEpoch, 'epochinfo', 'yes');
 EEG2 = eeg_checkset( EEG2);
-filename=['EoL_' EEG.filename];%EEG.filename = filename;
+filename=['RL_' EEG.filename];%EEG.filename = filename;
 EEG2 = pop_saveset( EEG2,filename, exp.filepath);
 
 

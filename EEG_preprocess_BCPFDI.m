@@ -61,8 +61,8 @@ end
 %% STEP 3.5: add triger for EMG_onsite upload
 
 for sub = exp.sub_id(1:end)
-    EEG = TLBF2_updateEMGtrigger(sub,exp);
-
+    EEG = TLBF2_updateEMGtrigger(sub,exp);% 给EMG onsite L 加标记为66
+    EEG1 = TLBF2_updateEMGtrigger_RL(EEG,exp); % 给RL 加标记为55
 end
 
 
@@ -126,7 +126,7 @@ end
 % Finally, we create a trial structure that contains a list of all relevant
 % experimental factors we may want to group trials by. 
 
-for e =3%1:2
+for e =2%1:2
     epoch = exp.epochs{e}
     allRej = [];
     for sub = exp.sub_id(1:end)
@@ -181,7 +181,7 @@ end
 % click "Accept" on the pop up menu and save your corrected file by adding
 % a 'c' at the beginning of your original file (e.g. cICAtrial_eyeB...). 
 
-for e = 3%1:2
+for e = 2%1:2
     epoch = exp.epochs{e}
     for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
@@ -198,7 +198,7 @@ end
 % bug fixed: last 4 channel dropped (ICAlable evalc 被注释掉)
 
 
-for e = 3%1:2
+for e = 2%1:2
     epoch = exp.epochs{e}
     for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
@@ -231,7 +231,7 @@ end
 % keep a note of them. 
 
 
-for e = 3%1:2
+for e = 2%1:2
     epoch = exp.epochs{e};
     for sub = exp.sub_id(1:end)
         % if strcmp(epoch,'SL')
@@ -253,7 +253,7 @@ end
 %% STEP 8: CSD filtering 
 % Relying on CSD toolbox (https://psychophysiology.cpmc.columbia.edu/software/csdtoolbox/)
 % Final step: Apply CSD transformation to the data 
-for e = 3%1:2
+for e = 2%1:2
     epoch = exp.epochs{e};
     for sub = exp.sub_id(1:end)
 
