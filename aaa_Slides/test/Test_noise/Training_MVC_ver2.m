@@ -1,0 +1,728 @@
+%Liang 15/Mar/2024 test 'Training_MVC'
+% ver2 change the sampling rate all 1926
+% 2. 97.5% max 'quantile' 
+%3. 2.5% rest quamtile
+
+%toolbox needed
+%Psychophysics Toolbox Version 3 (PTB-3)
+%http://www.psychtoolbox.org
+function Training_MVC
+clear all
+close all
+
+clc
+
+try
+
+    Screen('Preference', 'SkipSyncTests', 1);   %%This should be zero for main experiment
+    Screen('Preference','VisualdebugLevel',3);  %%skip the check page
+
+    Screen('CloseAll')
+%fdil=1;fdir=9;bcpl=8;bcpr=16;%EMG channel TL0 and 1
+%fdil=9;fdir=1;bcpl=16;bcpr=8;%TL11
+%fdil=1;fdir=9;bcpl=8;bcpr=16;
+fdil=13;fdir=5;bcpl=8;bcpr=16;%TL2
+
+
+    %%Initial parameters for dialog box
+    par.pID='TL'; par.MVC=2; par.numtrials=8; par.thresh= [0.2];
+    par.buffer_size = 4*2000;
+    % on first run of task, set defaults to put in dialog box
+    par.booth_name='R';
+
+
+    dlg_title = 'Exp Parameters';
+    while 1
+
+        prompt = {'Enter PARTICIPANT', 'RUN/TASK IDENTIFIER:','MVC? (1=max, 0=train, 2= rest)', ['Number of trials?'], ['Threshold? % of MVC'],['booth?(L or R)']}; %
+        def = {par.pID, '', num2str(par.MVC), num2str(par.numtrials),num2str(par.thresh),par.booth_name};
+        answer = inputdlg(prompt,dlg_title,1,def);
+        par.pID = answer{1};
+        par.run = answer{2};
+        par.runID = [par.pID '_' par.run];
+        par.MVC = str2num(answer{3});
+        par.numtrials = str2num(answer{4});
+        par.thresh = str2num(answer{5});
+        par.booth_name=answer{6};
+
+
+        if par.MVC==1 && exist([par.pID '_MVC.mat'],'file'),
+            dlg_title = [par.pID '_MVC.mat EXISTS ALREADY - CHOOSE ANOTHER, OR DELETE THAT ONE IF IT IS RUBBISH']
+        elseif par.MVC==2 && exist([par.pID '_Rest.mat'],'file'),
+            dlg_title = [par.pID '_Rest.mat EXISTS ALREADY - CHOOSE ANOTHER, OR DELETE THAT ONE IF IT IS RUBBISH']
+        elseif ~ par.MVC && exist([par.runID '_train.mat'],'file'),
+            dlg_title = [par.runID '_train.mat EXISTS ALREADY - CHOOSE ANOTHER, OR DELETE THAT ONE IF IT IS RUBBISH']
+        else
+            break
+        end
+
+
+    end
+
+    percentage_of_MVC = par.thresh;
+    par.ITI=1;
+    if ~par.MVC % when in training mode
+        [MVC1,MVC2,MVC11,MVC22] = readMVC([par.pID '_MVC.mat']);%1-left 2-right
+        [Rest1,Rest2,Rest11,Rest22] = readRest([par.pID '_Rest.mat']);
+    end
+    %%Important task parameters
+    windowtime =250e-3;  %% in seconds the length of EMG window for MAV calculation
+    EMGWindowLength = ceil(1926*windowtime); %%In sample points.
+    maxTime = 3;  %%maximum time for trial in seconds
+    time_over_th = 4; %Number of refreshes to requre over threshold
+    par.videoFrate = 85;% set as 85Hz
+    %%EMG filter
+    w1 = 10/(1926/2);
+    w2 = 500/(1926/2);
+    [bcoef, acoef] = butter(4, [w1 w2]);
+
+
+    if par.MVC
+        maxTime = 3.5; % when recording rest and Max;
+    end
+
+    %% Initialize Psychtoolbox
+
+    PsychDefaultSetup(2);
+    screens = Screen('Screens');
+    screenNumber = max(screens);
+
+    % % Make our window transparent for testing
+    % opacity = 0.5;
+    % PsychDebugWindowConfiguration([], opacity)
+
+    % Open window
+    [window, windowRect] = PsychImaging('OpenWindow', screenNumber, [0 0 0]);
+    [screenXpixels, screenYpixels] = Screen('WindowSize', window);
+
+    par.hz = Screen('FrameRate', 0, 1); % find out the refresh rate as well
+    disp(['Screen Refresh Rate ' num2str(par.hz)]);
+
+    % Check if screen parameters are correct
+    %     if scres~= [1920,1080] %[1280 720] %[1024,768] %[1280 720]this aspect ratio is according to TUF monitor % %[1920 1080]   %[2736,1824] % [1280,1024]%  DESIRED SR = 1024, 768. Changed to 1920 to run on LS_NOVA
+    %         error(['The monitor is NOT SET to the Screen Resolution. Please change it.'])
+    %     end
+    if abs(par.videoFrate-par.hz)>1 %check if 85Hz
+        error(['The monitor is NOT SET to the desired frame rate of ' num2str(par.videoFrate) ' Hz. Change it.'])
+    end
+
+    % Define rectangle dimensions
+    width = 200;
+    spacing = 475;
+
+    % Calculate rectangle positions
+    centerX = round(0.5 * RectWidth(Screen('Rect', screenNumber)));
+    rectLeftX = centerX - spacing - round(0.5 * width);
+    rectRightX = centerX + spacing - round(0.5 * width);
+    rectBottomY = RectHeight(Screen('Rect', screenNumber));
+
+
+    % Calculate threshold line position
+
+    thresholdY = (1-percentage_of_MVC) * RectHeight(Screen('Rect', screenNumber)); %(bottem of screen = 100%!!!!!!!!!)
+    thresholdX = RectWidth(Screen('Rect', screenNumber));
+
+    %% Load starting screen
+
+    handoptions = {'left finger', 'right finger', 'left becips', 'right becips'};
+    hand = randperm(4); %will randomly order the values in handoptions (l, r) or (r,l)
+    hand = hand(1);  %assign hand the first cell (l or r)
+
+    %creast intro to be shown on screen
+    %     intro1 = 'Trial Commencing';
+    %     if par.MVC
+    %         intro1 = 'MVC Trial Commencing';
+    %     end
+    %     intro2 = '\n Relax Muscles';
+    %     intro3 = sprintf(['\n Trial Number: 1 - ' handoptions{hand}]);
+    %
+    %     Screen('TextSize', window, 100);
+    %     DrawFormattedText(window,[intro1 intro2 intro3] ,'center', screenYpixels * 0.5, [1 1 1]); %centre words on screen in white
+    %
+    % Flip to the screen
+    Screen('Flip', window);
+
+    tockp=[];
+    tic
+    for i=1:100
+
+        Screen('flip',window);
+        tockp= [ tockp; toc];
+    end
+    if abs(1/(median(diff(tockp))) - par.hz)>1, error('refresh rate off - try restarting matlab or the computer'), end
+
+
+    %wait 5s
+    WaitSecs(1); %change to 5
+
+
+
+    %% EMG setup
+    % CHANGE THIS TO THE IP OF THE COMPUTER RUNNING THE TRIGNO CONTROL UTILITY
+    if par.booth_name == 'L'   %%%Simon's original setup
+        HOST_IP = '137.43.148.180';    %%Needed for real-time EMG recording
+        par.monitorwidth_cm = 54.3;
+        load('gammafn_UCDnew_3par.mat');
+    elseif par.booth_name == 'R'  %%New booth setup
+        HOST_IP = '137.43.149.175';    %%Needed for real-time EMG recording
+        par.monitorwidth_cm = 60;
+        load('gammafn_UCDRight_3par.mat');
+    end
+
+
+
+    %% Create the required objects
+
+    %TCPIP Connection to stream EMG Data
+
+    %for FDI muscle :EMG Data port
+    interfaceObjectEMG = tcpip(HOST_IP,50043); %original reg trignos port=41, need port=43 for dual trignos
+    interfaceObjectEMG.InputBufferSize = 6400*6;   %600 samples
+    num_buffer_samples = interfaceObjectEMG.InputBufferSize/64;
+
+    %for becips : Legacy EMG Data port
+
+    interfaceObjectEMG_becips = tcpip(HOST_IP,50043); %original reg trignos port=41, need port=43 for dual trignos
+    interfaceObjectEMG_becips.InputBufferSize = 6400*6;   %600 samples
+    num_buffer_samples_becips = interfaceObjectEMG_becips.InputBufferSize/64;
+
+    %TCPIP Connection to communicate with SDK, send/receive commands
+    commObject = tcpip(HOST_IP,50040);
+
+
+    %% Open the COM interface, determine RATE
+
+    fopen(commObject);
+
+    pause(1);
+    fread(commObject,commObject.BytesAvailable);
+    fprintf(commObject, sprintf(['RATE 2000\r\n\r']));
+    pause(1);
+    fread(commObject,commObject.BytesAvailable);
+    fprintf(commObject, sprintf(['RATE?\r\n\r']));
+    pause(1);
+    data = fread(commObject,commObject.BytesAvailable);
+
+    emgRate = strtrim(char(data'));
+    % if(strcmp(emgRate, '1925.926'))
+    %     rateAdjustedEmgBytesToRead=1664;
+    % else
+    %     rateAdjustedEmgBytesToRead=1728;
+    % end
+
+    rateAdjustedEmgBytesToRead = 640;  %%will read in either 20 or 30 samples with the 85Hz refresh rate
+    %This just needs to be a multiple of 64, since we are not using the
+    %accelerometer. It's the minimum number of bytes to read. 64 bytes is
+    %one sample.
+
+
+    %drawnow
+
+
+    %pause(1);
+
+    %%
+    % Open the interface object for FDI and becips
+    %for FDI
+    try
+        fopen(interfaceObjectEMG);
+    catch
+        sca
+        Screen('CloseAll');
+        keyboard
+
+        error('CONNECTION ERROR: Please start the FDI Trigno Control Application and try again');
+    end
+    % for becips
+    try
+        fopen(interfaceObjectEMG_becips);
+    catch
+        sca
+        Screen('CloseAll');
+        keyboard
+
+        error('CONNECTION ERROR: Please start the becips Trigno Control Application and try again');
+    end
+
+    %% Send the commands to start data streaming
+    WaitSecs(par.ITI);
+
+    fprintf(commObject, sprintf(['START\r\n\r']));
+
+    WaitSecs(par.ITI);
+    pause(2);
+
+    outcome  = nan(1,par.numtrials); % outcome = 0 for timeout, 1 for successful left FDI trial, 4 for successful right becips trial
+    start_time_emg  = nan(1,par.numtrials);
+    pre_buffer_time = nan(1,par.numtrials);
+    if par.MVC %for training case
+        %for FDI
+        MVC1 = nan(1,par.numtrials);%left
+        MVC2 = nan(1,par.numtrials);
+        Rest1 = nan(1,par.numtrials);
+        Rest2 = nan(1,par.numtrials);%right
+        %for becips
+        MVC11 = nan(1,par.numtrials);%left
+        MVC22 = nan(1,par.numtrials);
+        Rest11 = nan(1,par.numtrials);
+        Rest22 = nan(1,par.numtrials);%right
+    end
+    cue_hand = nan(1,par.numtrials);
+    trialstartT = nan(1,par.numtrials);
+    trialRT = nan(1,par.numtrials);
+
+    %for FDI buffer
+    EMG_buffer=[];
+    %for becips buffer
+    EMG_buffer_becips=[];
+    %par.buffer_size = 4*1926; %%make this a par?
+    buffer_size=par.buffer_size;
+
+    for trialnum = 1: par.numtrials
+        %For FDI
+        bytesAvailRec  = []; % interfaceObjectEMG.BytesAvailable
+        data_arrayBaseline=[];
+        data_arrayEMG=[];
+        baselineread{trialnum}=[];
+        baselinesamples{trialnum}=[];
+        num_samples{trialnum}=nan(1, ceil(par.hz*maxTime));
+        MAV{trialnum}=nan(ceil(par.hz*maxTime),2);
+        beforeBuffRead_time{trialnum}=nan(1, ceil(par.hz*maxTime));
+        afterBuffRead_time{trialnum}=nan(1, ceil(par.hz*maxTime));
+        bytesAvailRec{trialnum}=nan(1, ceil(par.hz*maxTime));
+        %counts for determining how much time elapses while rect is over the threshold
+  
+        count1=0;
+        count2=0;
+        EMGlevel1 = 0;
+        EMGlevel2 = 0;
+
+        %for becips
+        bytesAvailRec_becips  = []; % interfaceObjectEMG.BytesAvailable
+        data_arrayBaseline_becips=[];
+        data_arrayEMG_becips=[];
+        baselineread_becips{trialnum}=[];
+        baselinesamples_becips{trialnum}=[];
+        num_samples_becips{trialnum}=nan(1, ceil(par.hz*maxTime));
+        MAV_becips{trialnum}=nan(ceil(par.hz*maxTime),2);
+        beforeBuffRead_time_becips{trialnum}=nan(1, ceil(par.hz*maxTime));
+        afterBuffRead_time_becips{trialnum}=nan(1, ceil(par.hz*maxTime));
+        bytesAvailRec_becips{trialnum}=nan(1, ceil(par.hz*maxTime));
+        %counts for determining how much time elapses while rect is over the threshold
+        count11=0;
+        count22=0;
+        EMGlevel11 = 0;
+        EMGlevel22 = 0;
+
+        cue_hand(trialnum) = hand; % 1-left FDI 2-right FDI 3-left becips 4-right becips
+
+        %%Let's read in baseline EMG for 1 sec or so during instructions to make sure buffer
+        %%cleared
+
+        pre_buffer_time(trialnum) = GetSecs;
+        keepgoing=1;
+        if trialnum==1, baselinetime = 6; else baselinetime = 3; end;
+        while keepgoing
+
+            %for FDI read baseline EMG data
+            bytesReadyTMP = interfaceObjectEMG.BytesAvailable;
+            %bytesAvailRec = [bytesAvailRec bytesReady];
+            bytesReadyTMP = bytesReadyTMP - mod(bytesReadyTMP, rateAdjustedEmgBytesToRead);%%1664
+
+            if ~(bytesReadyTMP == 0)
+                % beforeBuffRead_time{n}((y-1)*numRefreshPerCycle + i) = GetSecs;
+                TMP  = cast(fread(interfaceObjectEMG,bytesReadyTMP), 'uint8');
+                baselineread{trialnum} = [ baselineread{trialnum}; GetSecs];
+                TMP = typecast(TMP, 'single');
+                data_ch1 = TMP(fdil:16:end); %for left FDI always check channel 1
+                data_ch3 = TMP(fdir:16:end);
+                data_arrayBaseline = [data_arrayBaseline; [data_ch1,data_ch3]];
+                EMG_buffer = [EMG_buffer; [data_ch1,data_ch3]];
+
+                baselinesamples{trialnum} = [ baselinesamples{trialnum}; length(data_ch1)];
+            else
+                baselinesamples{trialnum} = [ baselinesamples{trialnum}; 0];
+            end
+
+            %For Becips read baseline EMG data
+            bytesReadyTMP_becips = interfaceObjectEMG_becips.BytesAvailable;
+            %bytesAvailRec = [bytesAvailRec bytesReady];
+            bytesReadyTMP_becips = bytesReadyTMP_becips - mod(bytesReadyTMP_becips, rateAdjustedEmgBytesToRead);%%1664
+
+            if ~(bytesReadyTMP_becips == 0)
+                % beforeBuffRead_time{n}((y-1)*numRefreshPerCycle + i) = GetSecs;
+                TMP_becips  = cast(fread(interfaceObjectEMG_becips,bytesReadyTMP_becips), 'uint8');
+                baselineread_becips{trialnum} = [ baselineread_becips{trialnum}; GetSecs];
+                TMP_becips = typecast(TMP_becips, 'single');
+                data_ch1_becips = TMP_becips(bcpl:16:end); %for left FDI always check channel 11
+                data_ch3_becips = TMP_becips(bcpr:16:end);
+                data_arrayBaseline_becips = [data_arrayBaseline_becips; [data_ch1_becips,data_ch3_becips]];
+                EMG_buffer_becips = [EMG_buffer_becips; [data_ch1_becips,data_ch3_becips]];
+
+                baselinesamples_becips{trialnum} = [ baselinesamples_becips{trialnum}; length(data_ch1_becips)];
+            else
+                baselinesamples_becips{trialnum} = [ baselinesamples_becips{trialnum}; 0];
+            end
+
+
+            %show load screen
+            line1 = 'Ready';
+            if par.MVC == 1
+                line1 = 'Max force Ready';
+            elseif par.MVC == 2
+                line1 = 'Rest Ready';
+            end
+            line2 = '\n Relax Muscles';
+            line3 = sprintf(['\n Trial Number: %d - ' handoptions{hand}],trialnum);
+            Screen('TextSize', window, 100);
+            DrawFormattedText(window, [line1 line2 line3],'center', screenYpixels * 0.5, [1 1 1]);
+
+
+            if GetSecs-pre_buffer_time(trialnum) > 10
+                error('EMG problem?')
+
+            end
+            %FDI check
+            if size(EMG_buffer,1) > buffer_size
+                if EMG_buffer(end-buffer_size,1) ~= 0 && GetSecs-pre_buffer_time(trialnum) > 3 && length(data_ch1) < num_buffer_samples
+                    keepgoing = 0;
+                end
+            end
+            %Becips check
+            if size(EMG_buffer_becips,1) > buffer_size
+                if EMG_buffer_becips(end-buffer_size,1) ~= 0 && GetSecs-pre_buffer_time(trialnum) > 3 && length(data_ch1_becips) < num_buffer_samples_becips
+                    keepgoing = 0;
+                end
+            end
+
+            % Flip to the screen
+            Screen('Flip', window);
+        end
+
+        start_time_emg(trialnum) = GetSecs;
+        %FDI
+        EMG_buffer = double(EMG_buffer(end-(buffer_size-1):end,:));%
+        initial_EMG_buffer = EMG_buffer;
+        %becips
+        EMG_buffer_becips = double(EMG_buffer_becips(end-(buffer_size-1):end,:));%
+        initial_EMG_buffer_becips = EMG_buffer_becips;
+
+        for ind = 1:ceil(par.hz*maxTime)
+
+            if  ((count1>= time_over_th) & hand==1) | ((count2 >= time_over_th) & hand==2 | (count11>= time_over_th) & hand==3) | ((count22 >= time_over_th) & hand==4) %if rect is over line > 400 msec
+
+                Screen('TextSize', window, 30);
+                DrawFormattedText(window, 'Well done','center', screenYpixels * 0.5, [1 1 1]);
+                Screen('Flip', window);
+                if isnan(outcome(trialnum))
+                    % outcome = 0 for timeout, 1 for successful left FDI trial, 4 for successful right becips trial
+                    outcome(trialnum) = hand;
+                end
+
+                break
+            else
+                %for FDI EMG signal read????
+                bytesReady = interfaceObjectEMG.BytesAvailable;
+                bytesAvailRec{trialnum}(ind) = bytesReady;
+                bytesReady = bytesReady - mod(bytesReady, rateAdjustedEmgBytesToRead);%%1664
+                if ~(bytesReady == 0)
+
+                    beforeBuffRead_time{trialnum}(ind) = GetSecs;
+                    data = cast(fread(interfaceObjectEMG,bytesReady), 'uint8');
+                    data = typecast(data, 'single');
+                    afterBuffRead_time{trialnum}( ind) = GetSecs;
+                    %bytesReady = interfaceObjectEMG.BytesAvailable;
+                    %bytesAvailRec2 = [bytesAvailRec2 bytesReady];
+
+                    data_ch1 = data(fdil:16:end); %left hand - will be plotted as rect1
+                    data_ch3 = data(fdir:16:end); %right hand (using channel3 - will be plotted as rect2
+                    num_samples{trialnum}(ind) = length(data_ch1);
+                    data_arrayEMG = [data_arrayEMG; [data_ch1,data_ch3]];
+                    EMG_buffer = [EMG_buffer(length(data_ch1)+1:end,:);  double([data_ch1, data_ch3])];
+                end
+                %if length(data_arrayEMG)>=EMGWindowLength  %%%Liang we might get rid of this condition here.
+
+                %for becips read EMG data
+                bytesReady_becips = interfaceObjectEMG_becips.BytesAvailable;
+                bytesAvailRec_becips{trialnum}(ind) = bytesReady_becips;
+                bytesReady_becips = bytesReady_becips - mod(bytesReady_becips, rateAdjustedEmgBytesToRead);%%1664
+                if ~(bytesReady_becips == 0)
+
+                    beforeBuffRead_time_becips{trialnum}(ind) = GetSecs;
+                    data_becips = cast(fread(interfaceObjectEMG_becips,bytesReady_becips), 'uint8');
+                    data_becips = typecast(data_becips, 'single');
+                    afterBuffRead_time_becips{trialnum}( ind) = GetSecs;
+                    %bytesReady = interfaceObjectEMG.BytesAvailable;
+                    %bytesAvailRec2 = [bytesAvailRec2 bytesReady];
+
+                    data_ch1_becips = data(bcpl:16:end); %left hand - will be plotted as rect1
+                    data_ch3_becips = data(bcpr:16:end); %right hand (using channel13 - will be plotted as rect2
+                    num_samples_becips{trialnum}(ind) = length(data_ch1_becips);
+                    data_arrayEMG_becips = [data_arrayEMG_becips; [data_ch1_becips,data_ch3_becips]];
+                    EMG_buffer_becips = [EMG_buffer_becips(length(data_ch1_becips)+1:end,:);  double([data_ch1_becips, data_ch3_becips])];
+                end
+                %if length(data_arrayEMG)>=EMGWindowLength  %%%Liang we might get rid of this condition here.
+
+
+                %                     %filter FDI
+                filteredsignal1 = filtfilt(bcoef, acoef, (EMG_buffer(:,1)));
+                filteredsignal2 = filtfilt(bcoef, acoef, (EMG_buffer(:,2)));
+                %becips
+                filteredsignal1_becips = filtfilt(bcoef, acoef, (EMG_buffer_becips(:,1)));
+                filteredsignal2_becips = filtfilt(bcoef, acoef, (EMG_buffer_becips(:,2)));
+
+                %    EMGwindow{n}(emgind, :, :) = [filteredsignal1 filteredsignal2]; %Probably to big to save
+                %FDI
+                %these are the values we want to plot as rect heights
+                EMGlevel1 = mean(abs(filteredsignal1((end-EMGWindowLength+1):end))); %left hand/rect
+                EMGlevel2 = mean(abs(filteredsignal2((end-EMGWindowLength+1):end))); %right hand/rect
+                MAV{trialnum}(ind,:) = [EMGlevel1 EMGlevel2];
+                %becips
+                EMGlevel11 = mean(abs(filteredsignal1_becips((end-EMGWindowLength+1):end))); %left hand/rect
+                EMGlevel22 = mean(abs(filteredsignal2_becips((end-EMGWindowLength+1):end))); %right hand/rect
+                MAV_becips{trialnum}(ind,:) = [EMGlevel11 EMGlevel22];
+
+
+                if ~par.MVC
+                    % Generate new random heights for rectangles
+                    % Normalise EMG FDI
+                    rectHeight1 = max([((EMGlevel1-Rest1)/(MVC1-Rest1))*screenYpixels, 0]);
+                    rectHeight2 = max([((EMGlevel2-Rest2)/(MVC2-Rest2))*screenYpixels, 0]);
+                    % becips
+                    rectHeight11 = max([((EMGlevel11-Rest11)/(MVC11-Rest11))*screenYpixels, 0]);
+                    rectHeight22 = max([((EMGlevel22-Rest22)/(MVC22-Rest22))*screenYpixels, 0]);
+
+
+                    %%if over threshold for FDI
+                    if rectBottomY-rectHeight1<=thresholdY
+                        colour1 =  double([0.2 0.9 0.2]); %green
+                        count1=count1+1;
+
+                        if hand==1  && isnan(trialRT(trialnum))
+                            trialRT(trialnum)= GetSecs;
+                        end
+                    else
+                        colour1 = double([1 0 0.1]); %red
+                        count1=0;
+                        if hand==1
+                            trialRT(trialnum) = nan;
+                        end
+                    end
+
+                    if rectBottomY-rectHeight2<=thresholdY
+                        colour2 =  double([0.2 0.9 0.2]); %green
+                        count2=count2+1;
+                        if hand==2 && isnan(trialRT(trialnum))
+                            trialRT(trialnum)= GetSecs;
+                        end
+                    else
+                        colour2 = double([1 0 0.1]);  %red
+                        count2=0;
+                        if hand==2
+                            trialRT(trialnum) = nan;
+                        end
+                    end
+
+                    %%if over threshold for becips
+                    if rectBottomY-rectHeight11<=thresholdY
+                        colour11 =  double([0.2 0.2 0.9]); %blue
+                        count11=count11+1;
+
+                        if hand==3  && isnan(trialRT(trialnum))
+                            trialRT(trialnum)= GetSecs;
+                        end
+                    else
+                        colour11 = double([1 1 0.1]); %yellow
+                        count11=0;
+                        if hand==3
+                            trialRT(trialnum) = nan;
+                        end
+                    end
+
+                    if rectBottomY-rectHeight22<=thresholdY
+                        colour22 =  double([0.2 0.2 0.9]); %blue
+                        count22=count22+1;
+                        if hand==4 && isnan(trialRT(trialnum))
+                            trialRT(trialnum)= GetSecs;
+                        end
+                    else
+                        colour22 = double([1 1 0.1]);  %yellow
+                        count22=0;
+                        if hand==4
+                            trialRT(trialnum) = nan;
+                        end
+                    end
+                    %
+
+                    % Draw rectangles
+                    %check here for overlap
+                    rect1 = double([rectLeftX, rectBottomY - rectHeight1, rectLeftX + width, rectBottomY]);
+                    rect2 = double([rectRightX, rectBottomY - rectHeight2, rectRightX + width, rectBottomY]);
+                    rect11 = double([rectLeftX, rectBottomY - rectHeight11, rectLeftX + width, rectBottomY]);
+                    rect22 = double([rectRightX, rectBottomY - rectHeight22, rectRightX + width, rectBottomY]);
+
+%plot here
+                    if hand==1||hand==2
+                    Screen('FillRect', window, colour1, rect1);%green/red for FDI
+                    Screen('FillRect', window, colour2, rect2);
+                    elseif hand==3||hand==4
+                    Screen('FillRect', window, colour11, rect11);%blue/yellow for becips
+                    Screen('FillRect', window, colour22, rect22);
+                    end
+
+                    % Label rectangles and counters
+                    label1 = sprintf('left');
+                    label2 = sprintf('right');
+                    Screen('TextSize', window, 30);
+                    DrawFormattedText(window, label1, rectLeftX-200, rectBottomY -30, [1 1 1]);
+                    DrawFormattedText(window, label2, rectRightX+250, rectBottomY - 30, [1 1 1]);
+
+                    % Draw threshold line and label
+                    Screen('DrawLine', window, [1 1 1], 0, thresholdY, thresholdX, thresholdY,10);
+                    DrawFormattedText(window, 'threshold', thresholdX - 200, thresholdY - 30, [1 1 1]);
+
+                    %Screen('Flip', window,0.9);
+                    if isnan(trialstartT(trialnum))
+                        trialstartT(trialnum) =  Screen('Flip', window);  %%Trial startT is when the interface is visible to the participant. start_time_emg is when the trial EMG starts getting saved
+
+                    else
+                        Screen('Flip', window);
+                    end
+
+                else
+                    Screen('Flip', window);
+                end
+                %else
+                %Screen('Flip', window);
+                %end
+            end
+        end
+
+
+
+
+
+
+        WaitSecs(0.5)    %freeze bar for 2ss for recognition of success
+
+
+        RT(trialnum) = trialRT(trialnum) - trialstartT(trialnum);
+
+        if trialnum<par.numtrials  %%instructions for next trial
+            %hand = 3-hand; %switch hand
+
+            %switch hand with random start 
+            if hand==1
+                hand=3;
+            elseif hand==3
+                hand=2;
+            elseif hand==2
+                hand=4;
+            elseif hand==4
+                hand=1;
+            end
+
+            %wait 5s
+
+        end
+
+  %do we want to use 80/90% max 'quantile' func
+       if par.MVC == 1
+            MVC1(trialnum) = quantile( MAV{trialnum}(:,1),0.975);
+            MVC2(trialnum) = quantile( MAV{trialnum}(:,2),0.975);
+            MVC11(trialnum) = quantile( MAV_becips{trialnum}(:,1),0.975);
+            MVC22(trialnum) = quantile( MAV_becips{trialnum}(:,2),0.975);
+
+        elseif par.MVC == 2
+            Rest1(trialnum) = quantile( MAV{trialnum}(:,1),0.025);%nanmedian
+            Rest2(trialnum) = quantile( MAV{trialnum}(:,2),0.025);
+            Rest11(trialnum) = quantile( MAV_becips{trialnum}(:,1),0.025);
+            Rest22(trialnum) = quantile( MAV_becips{trialnum}(:,2),0.025);
+
+        end
+
+        %for FDI
+        FullEMG{trialnum} = [initial_EMG_buffer; data_arrayEMG];
+        BaselineEMG{trialnum} = data_arrayBaseline;
+        %for becips
+        FullEMG_becips{trialnum} = [initial_EMG_buffer_becips; data_arrayEMG_becips];
+        BaselineEMG_becips{trialnum} = data_arrayBaseline_becips;
+    end
+
+    %save important variables before we fully close the interface
+    if par.MVC ==1
+        MVC1 = max(MVC1);
+        MVC2 = max(MVC2);
+        MVC11 = max(MVC11);
+        MVC22 = max(MVC22);
+        save([par.pID '_MVC'], 'cue_hand', 'MAV', 'MAV_becips', 'FullEMG', 'BaselineEMG', 'FullEMG_becips', 'BaselineEMG_becips', 'trialstartT', 'EMGWindowLength', 'maxTime', 'MVC1', 'MVC2', 'MVC11', 'MVC22');
+    elseif par.MVC ==2
+        Rest1 = min(Rest1);
+        Rest2 = min(Rest2);
+        Rest11 = min(Rest11);
+        Rest22 = min(Rest22);
+        save([par.pID '_Rest'], 'cue_hand', 'MAV', 'MAV_becips', 'FullEMG', 'BaselineEMG', 'FullEMG_becips', 'BaselineEMG_becips', 'trialstartT', 'EMGWindowLength', 'maxTime', 'Rest1', 'Rest2', 'Rest11', 'Rest22');
+    else %for training section
+        save([par.runID '_train.mat'], 'par', 'cue_hand', 'outcome', 'MAV', 'MAV_becips', 'FullEMG', 'BaselineEMG', 'BaselineEMG_becips', 'FullEMG_becips', 'trialstartT', 'trialRT', 'RT', 'EMGWindowLength', 'maxTime', 'time_over_th', 'MVC1', 'MVC2', 'MVC11', 'MVC22', 'percentage_of_MVC', 'num_samples', 'num_samples_becips', 'beforeBuffRead_time', 'afterBuffRead_time', 'beforeBuffRead_time_becips', 'afterBuffRead_time_becips', 'baselineread', 'baselinesamples', 'baselineread_becips', 'baselinesamples_becips', 'start_time_emg', 'pre_buffer_time' , 'Rest1', 'Rest2', 'Rest11', 'Rest22', 'bytesAvailRec', 'bytesAvailRec_becips');
+    end
+    Screen('CloseAll');
+
+
+
+catch
+    sca
+    Screen('CloseAll');
+    ple
+    keyboard
+
+    ShowCursor
+
+
+    % Clean up the network objects
+    if isvalid(interfaceObjectEMG)
+        fclose(interfaceObjectEMG);
+        delete(interfaceObjectEMG);
+        clear interfaceObjectEMG;
+    end
+
+    if isvalid(interfaceObjectEMG_becips)
+        fclose(interfaceObjectEMG_becips);
+        delete(interfaceObjectEMG_becips);
+        clear interfaceObjectEMG_becips;
+    end
+
+    if isvalid(commObject);
+        fclose(commObject);
+        delete(commObject);
+        clear commObject;
+    end
+end
+
+
+% Clean up the network objects
+if isvalid(interfaceObjectEMG)
+    fclose(interfaceObjectEMG);
+    delete(interfaceObjectEMG);
+    clear interfaceObjectEMG;
+end
+
+if isvalid(interfaceObjectEMG_becips)
+    fclose(interfaceObjectEMG_becips);
+    delete(interfaceObjectEMG_becips);
+    clear interfaceObjectEMG_becips;
+end
+
+
+if isvalid(commObject);
+    fclose(commObject);
+    delete(commObject);
+    clear commObject;
+end
+keyboard
+
+
+
+
+
+
+
