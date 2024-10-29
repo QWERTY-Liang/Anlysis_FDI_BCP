@@ -62,7 +62,7 @@ end
 
 for sub = exp.sub_id(1:end)
     EEG = TLBF2_updateEMGtrigger(sub,exp);% 给EMG onsite L 加标记为66
-    EEG1 = TLBF2_updateEMGtrigger_RL(EEG,exp); % 给RL 加标记为55
+    EEG1 = TLBF2_updateEMGtrigger_RL(EEG,exp,sub); % 给RL 加标记为55
 end
 
 
@@ -97,7 +97,7 @@ end
 
 for sub = exp.sub_id(1:end)
     [EEG1, EEG2] = TLBF2_epochData(sub,exp);  %Epoch around evidence and around response
-    TLBF2_manualChanCheck(sub,exp,EEG1,EEG2);
+    TLBF2_manualChanCheck(sub,exp,EEG1,EEG2); % 阈值现在是75uV
     clear EEG1; clear EEG2; close all;
 end
 %logbook for bad channel (100uV thresh)
@@ -253,7 +253,7 @@ end
 %% STEP 8: CSD filtering 
 % Relying on CSD toolbox (https://psychophysiology.cpmc.columbia.edu/software/csdtoolbox/)
 % Final step: Apply CSD transformation to the data 
-for e = 2%1:2
+for e = 1%1:2
     epoch = exp.epochs{e};
     for sub = exp.sub_id(1:end)
 

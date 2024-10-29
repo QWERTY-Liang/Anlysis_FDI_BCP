@@ -50,7 +50,7 @@ for e=1:length(exp.FrontChans)
 end
 
 %Identify candidate bad channels
-candidates = find(SD(1:exp.nEEGchans,:) > 100 | (SD(1:exp.nEEGchans,:) < 1 & (SD2(1:exp.nEEGchans,:) < 1)));
+candidates = find(SD(1:exp.nEEGchans,:) > 75 | (SD(1:exp.nEEGchans,:) < 1 & (SD2(1:exp.nEEGchans,:) < 1)));
 exclCandidates = setdiff(candidates,exp.FrontChans);
 
 for e=1:length(exclCandidates)
@@ -71,6 +71,7 @@ ch2interp = exclCandidates; % makes an empty cell array for filling in the bad c
 disp(['Channels to interpolate: ' num2str(exclCandidates')]);
 prompt = 'Confirm interpolation selection? y/n [y]: ';
 str = input(prompt,'s');
+
 
 if strcmp(str,'y')
     %Interpolate in SL epochs
