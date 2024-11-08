@@ -29,11 +29,11 @@ eeglab
 %load MuBeta_RL_HL.mat
 %load Beta_RL_HL.mat
 %load Mu_RL_HL.mat
-%load Delta_RL_HL.mat
+load Delta_RL_HL.mat
 
 %load MuBeta_RL_FDIBCP.mat
 %load Beta_RL_FDIBCP.mat
-load Mu_RL_FDIBCP.mat
+%load Mu_RL_FDIBCP.mat
 %load Delta_RL_FDIBCP.mat
 
 %fftlen = round(fs/21.5*6); % Window of how many sample points? If there is an SSVEP involved, whether or not you are interested in analyzing it, it is good to have all power related to the SSVEP isolated in a single frequency bin. This happens when you choose a window length that is an integer number of SSVEP cycles.
@@ -215,16 +215,17 @@ h3=TLBF3_stdshade((mean(avMB11(right_adjacent,:,:), 3) + mean(avMB22(left_adjace
 h4=TLBF3_stdshade_dash((mean(avMB11(left_adjacent,:,:), 3) + mean(avMB22(right_adjacent,:,:), 3)) / 2, 0.15, color_wrong2, Ts, smooth);
 
 set(gca, 'Ydir', 'reverse');  % Reverse the Y-axis
-xlim([-800, 400]);
+
 title('MB: contralateral vs ipsilateral (dash)');
- legend({'FDI contra', 'FDI ipsi', 'BCP contra', 'BCP ipsi'}, 'AutoUpdate', 'off');
-%legend({'High contra', 'High ipsi', 'Low contra', 'Low ipsi'}, 'AutoUpdate', 'off');
+ %legend({'FDI contra', 'FDI ipsi', 'BCP contra', 'BCP ipsi'}, 'AutoUpdate', 'off');
+legend({'High contra', 'High ipsi', 'Low contra', 'Low ipsi'}, 'AutoUpdate', 'off');
 
 xlabel('Time (ms)');
-ylabel('Beta (µV/m^2)');
+ylabel('MuBeta (µV/m^2)');
 
 % Add vertical lines at specified time points
-xline([0, 100], '--r', {'EMG onset', 'appx. respT'});
+%xline([0, 100], '--r', {'EMG onset', 'appx. respT'});xlim([-600, 200]);
+xline([-120 0], '--r', {'appx.rsepT', 'EVend'});xlim([-600, 200]);%ylim([10,12]);
 
 %% % Plot the scalp topographies at selected time points
 %选平均时间段 -20ms-280ms

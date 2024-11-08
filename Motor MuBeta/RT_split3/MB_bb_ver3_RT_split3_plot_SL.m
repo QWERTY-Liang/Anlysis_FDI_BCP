@@ -16,10 +16,10 @@ eeglab
 %%名称规则 波段_切分方法_分类方法_肌肉/条件
 %filepath='G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2\Motor MuBeta\RT_split3';
 cd ('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2\Motor MuBeta\RT_split3\');
-% load MuBeta_SL_HL.mat  %
+ load MuBeta_SL_HL.mat  %
 %load Delta_SL_HL.mat  %
 %load MuBeta_SL_FDIBCP.mat  %
-load Delta_SL_FDIBCP.mat  %
+%load Delta_SL_FDIBCP.mat  %
 
 Ts = [-950:20:2700]; % SL时的时间坐标
 
@@ -176,7 +176,7 @@ for i = 1:num_plots
     title([num2str(time_points(i)), ' ms']);
     colorbar;
 end
-%%
+%% RT split3
 %测试stdshade
 % Define colors for shading
 %蓝色浅到深

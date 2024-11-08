@@ -378,7 +378,7 @@ title(['ERP for Channel ', num2str(channel_to_plot)]);
 hold off;
 % Add vertical lines at specified time points
 hold on;
-xline([-1300 -1200, -600, 0, 800, 1500,2000], '--r', {'fix point', 'baseline on', 'cue change', 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s'});
+xline([-1300 -1200, -600, 0, 800, 1500,2000], '--k', {'fix point', 'baseline on', 'cue change', 'evidence on', 'minEvd0.8', 'DDL-1.5s','DDL-2s'});
 hold off;
 
 %% plot scalp plot ----- FDI

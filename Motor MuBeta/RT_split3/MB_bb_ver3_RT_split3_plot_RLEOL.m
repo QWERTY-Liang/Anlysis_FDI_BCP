@@ -16,13 +16,13 @@ eeglab
 %%名称规则 波段_切分方法_分类方法_肌肉/条件
 cd ('G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2\Motor MuBeta\RT_split3\');
 %filepath='G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2\Motor MuBeta\RT_split3';
-%load MuBeta_RL_HL.mat  %
+load MuBeta_RL_HL.mat  %
 %load Delta_RL_HL.mat  %
 %load MuBeta_RL_FDIBCP.mat  %
 %load Delta_RL_FDIBCP.mat  %
 
 %load MuBeta_EOL_HL.mat  %
-load Delta_EOL_HL.mat  %
+%load Delta_EOL_HL.mat  %
 
 load Delta_EOL_FDIBCP.mat
 

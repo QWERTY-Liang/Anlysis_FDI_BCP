@@ -28,7 +28,7 @@ amean = nanmean(amatrix,1); %get man over first dimension
 if smth > 1
     amean = boxFilter(nanmean(amatrix,1),smth); %use boxfilter to smooth data
 end
-astd = nanstd(amatrix,[],1)/3; % to get std shading 这里改变缩小了阴影
+astd = nanstd(amatrix,[],1)/10; % to get std shading 这里改变缩小了阴影
 % astd = nanstd(amatrix,[],1)/sqrt(size(amatrix,1)); % to get sem shading
 
 if exist('alpha','var')==0 || isempty(alpha) 

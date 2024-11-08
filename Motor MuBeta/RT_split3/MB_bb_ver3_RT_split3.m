@@ -150,7 +150,7 @@ for fband=1:5 %控制不同的频率段组合
                 end
             elseif e==1
 
-                RT= AllBehaviour(:,7); % 如果SL则 end of trial 分类
+                RT= AllBehaviour(:,6); % 如果SL则 end of trial 分类%%%% 这里有bug, 改为RT分类
 
             end
 

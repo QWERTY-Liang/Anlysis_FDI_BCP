@@ -14,14 +14,14 @@ exp.sub_id = [1,2,3,4,5,6];
 eeglab
 %%
 %%名称规则 波段_切分方法_分类方法_肌肉/条件
-%load MuBeta_SL_CR_HL.mat %
+load MuBeta_SL_CR_HL.mat %
 %load Beta_SL_CR_HL.mat %
 %load Mu_SL_CR_HL.mat %
 %load Delta_SL_CR_HL.mat
 %load Theta_SL_CR_HL.mat
 
 %load MuBeta_SL_CR_FDIBCP.mat
-load Delta_SL_CR_FDIBCP.mat
+%load Delta_SL_CR_FDIBCP.mat
 
 %fftlen = round(fs/21.5*6); % Window of how many sample points? If there is an SSVEP involved, whether or not you are interested in analyzing it, it is good to have all power related to the SSVEP isolated in a single frequency bin. This happens when you choose a window length that is an integer number of SSVEP cycles.
 %F = [0:fftlen-1]*fs/fftlen; % frequency scale, given window length (remember resolution = 1/window-duration)
