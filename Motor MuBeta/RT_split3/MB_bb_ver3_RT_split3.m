@@ -95,13 +95,13 @@ for fband=1:5 %控制不同的频率段组合
             if e==2 || e==3
                 fftlen = round(fs/21.25*6); % Window of how many sample points? If there is an SSVEP involved, whether or not you are interested in analyzing it, it is good to have all power related to the SSVEP isolated in a single frequency bin. This happens when you choose a window length that is an integer number of SSVEP cycles.
             elseif e==1
-                fftlen = round(fs/21.25*12);
+                fftlen = round(fs/21.25*6);
             end
 
 
             F = [0:fftlen-1]*fs/fftlen; % frequency scale, given window length (remember resolution = 1/window-duration)
             if fband==1
-                ff = find((F>8 & F<21.1) | (F>21.2 & F<30)); % the indices of F that cover the spectral range/band of interest. Let's say we're interested in Mu and Beta bands combined. Note here I'm avoiding the SSVEP frequency (18.75hz in this example)
+                ff = find((F>8 & F<21.15) | (F>21.35 & F<30)); % 21.25the indices of F that cover the spectral range/band of interest. Let's say we're interested in Mu and Beta bands combined. Note here I'm avoiding the SSVEP frequency (18.75hz in this example)
                 fbandname='MuBeta';
             elseif fband==2
                 ff = find((F>13 & F<21.1) | (F>21.2 & F<30)); %只有Beta
@@ -119,10 +119,10 @@ for fband=1:5 %控制不同的频率段组合
             end
 
             if e==2 || e==3
-                Ts = [-2700:20:800];%[-188*4:47:188*12]; % in msec, centered on what times do you want to measure spectral amplitude? i.e., where to center each consecutive window in time
+                Ts = [-188*14:47:188*4];%[-2700:20:800];%[-188*4:47:188*12]; % in msec, centered on what times do you want to measure spectral amplitude? i.e., where to center each consecutive window in time
                 % Tr = [-188*3:47:188]; % for response-locked
             elseif e==1
-                Ts = [-950:20:2700];
+                Ts =[-188*5:47:188*14];% %[-950:20:2700];
             end
             % Now in the rest of the code in the loop, we turn to computing and averaging Mu/Beta amplitude
             % compute short time fourier transform (STFT) for each single trial:
@@ -172,17 +172,17 @@ for fband=1:5 %控制不同的频率段组合
                 %     case 'CW_SL_b' %correct vs wrong; pre cue SL
                 for i=1:length(AllBehaviour)
                     %select trials
-                    if AllBehaviour(i,8)==1&& AllBehaviour(i,9)==2% &&AllBehaviour(i,4)==4% &&&& AllBehaviour(i,3)==0.14%&& AllBehaviour(i,9)==1%&& AllBehaviour(i,3)==0.14%&& AllBehaviour(i,4)==4% && AllBehaviour(i,4)==44
+                    if AllBehaviour(i,8)==1&& AllBehaviour(i,9)==1%&&AllBehaviour(i,3)==0.14%&& AllBehaviour(i,9)==2% &&AllBehaviour(i,4)==4% &&&& AllBehaviour(i,3)==0.14%&& AllBehaviour(i,9)==1%&& AllBehaviour(i,3)==0.14%&& AllBehaviour(i,4)==4% && AllBehaviour(i,4)==44
                         selected_trials_1(i,RTsplit)=1;
-                    elseif AllBehaviour(i,8)==2&& AllBehaviour(i,9)==1%&&AllBehaviour(i,4)==4%&& AllBehaviour(i,3)==0.14 %&& AllBehaviour(i,9)==2%&& AllBehaviour(i,3)==0.14%&& AllBehaviour(i,4)==4%&& AllBehaviour(i,4)==44
+                    elseif AllBehaviour(i,8)==2&& AllBehaviour(i,9)==2% &&AllBehaviour(i,3)==0.14%&& AllBehaviour(i,9)==1%&&AllBehaviour(i,4)==4%&& AllBehaviour(i,3)==0.14 %&& AllBehaviour(i,9)==2%&& AllBehaviour(i,3)==0.14%&& AllBehaviour(i,4)==4%&& AllBehaviour(i,4)==44
                         selected_trials_2(i,RTsplit)=1;
                     end
                     %exclude invalide(too early or wrong muscle)
-                    if AllBehaviour(i,5)==3 || AllBehaviour(i,5)==5|| AllBehaviour(i,5)==4%|| AllBehaviour(i,5)==6
-                        selected_trials_1(i,RTsplit)=0;%change back to unselected
-                        selected_trials_2(i,RTsplit)=0;
-                        count=count+1; %计数丢掉的trial
-                    end
+                    % if AllBehaviour(i,5)==3 || AllBehaviour(i,5)==5|| AllBehaviour(i,5)==4%|| AllBehaviour(i,5)==6
+                    %     selected_trials_1(i,RTsplit)=0;%change back to unselected
+                    %     selected_trials_2(i,RTsplit)=0;
+                    %     count=count+1; %计数丢掉的trial
+                    % end
 
                     %把不属于时间的剔除
                     if RTsplit==1
@@ -225,17 +225,17 @@ for fband=1:5 %控制不同的频率段组合
                 %     case 'CW_SL_b' %correct vs wrong; pre cue SL
                 for i=1:length(AllBehaviour)
                     %select trials
-                    if AllBehaviour(i,8)==1&& AllBehaviour(i,9)==2% &&AllBehaviour(i,4)==44%4&&AllBehaviour(i,3)==0.07 %&& AllBehaviour(i,9)==2%&&AllBehaviour(i,3)==0.07% AllBehaviour(i,4)==44%&& AllBehaviour(i,3)==0.07
+                    if AllBehaviour(i,8)==1&& AllBehaviour(i,9)==2%&&AllBehaviour(i,3)==0.07 %% &&AllBehaviour(i,4)==44%4&&AllBehaviour(i,3)==0.07 %&& AllBehaviour(i,9)==2%&&AllBehaviour(i,3)==0.07% AllBehaviour(i,4)==44%&& AllBehaviour(i,3)==0.07
                         selected_trials_11(i,RTsplit)=1;
-                    elseif AllBehaviour(i,8)==2&& AllBehaviour(i,9)==1% &&AllBehaviour(i,4)==44%&&AllBehaviour(i,3)==0.07 %&& AllBehaviour(i,9)==1%&& AllBehaviour(i,3)==0.07%AllBehaviour(i,4)==44%&& AllBehaviour(i,3)==0.07
+                    elseif AllBehaviour(i,8)==2&& AllBehaviour(i,9)==1%&&AllBehaviour(i,3)==0.07% &&AllBehaviour(i,4)==44%&&AllBehaviour(i,3)==0.07 %&& AllBehaviour(i,9)==1%&& AllBehaviour(i,3)==0.07%AllBehaviour(i,4)==44%&& AllBehaviour(i,3)==0.07
                         selected_trials_22(i,RTsplit)=1;
                     end
                     %exclude invalide(too early or wrong muscle)
-                    if AllBehaviour(i,5)==3 || AllBehaviour(i,5)==5|| AllBehaviour(i,5)==4
-                        selected_trials_11(i,RTsplit)=0;%change back to unselected
-                        selected_trials_22(i,RTsplit)=0;
-                        count=count+1;
-                    end
+                    % if AllBehaviour(i,5)==3 || AllBehaviour(i,5)==5|| AllBehaviour(i,5)==4
+                    %     selected_trials_11(i,RTsplit)=0;%change back to unselected
+                    %     selected_trials_22(i,RTsplit)=0;
+                    %     count=count+1;
+                    % end
 
                     %把不属于时间的剔除
                     if RTsplit==1
@@ -294,7 +294,7 @@ for fband=1:5 %控制不同的频率段组合
 
         end
 
-        save(['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2\Motor MuBeta\RT_split3\' fbandname '_' epoch '_CW.mat'], 'avMB1_1', 'avMB2_1', 'avMB11_1', 'avMB22_1', 'avMB1_2', 'avMB2_2', 'avMB11_2', 'avMB22_2', 'avMB1_3', 'avMB2_3', 'avMB11_3', 'avMB22_3');
+        save(['G:\My Drive\Phd\Stage1\BCPvsFDI\E1data_polit\Anlysis_v2\Motor MuBeta\RT_split3\' fbandname '_' epoch '_CW_v2.mat'], 'avMB1_1', 'avMB2_1', 'avMB11_1', 'avMB22_1', 'avMB1_2', 'avMB2_2', 'avMB11_2', 'avMB22_2', 'avMB1_3', 'avMB2_3', 'avMB11_3', 'avMB22_3');
         clear avMB1_1 avMB2_1 avMB11_1 avMB22_1 avMB1_2 avMB2_2 avMB11_2 avMB22_2 avMB1_3 avMB2_3 avMB11_3 avMB22_3
     end
 end
