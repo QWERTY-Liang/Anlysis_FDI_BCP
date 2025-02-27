@@ -7,7 +7,7 @@ function datsum = makeSummaryStructure(data,qps,scol)
 % q contains the quantile RT values (e.g. the value for the .1 quantile is the timepoint below which 10% of the RTs lie)
 % qp contains the proportion of trials of a given condition where RT lands in each quantile bin
 
-maxRT = 1.5; % I'm setting this as the upper limit of the slowest quantile bin across the board. If, alternatively, we set this upper limit to be max(data(trl,3)), 
+maxRT = 2; % I'm setting this as the upper limit of the slowest quantile bin across the board. If, alternatively, we set this upper limit to be max(data(trl,3)), 
 % we would have a gap with no responses between max(data(trl,3)) and 1.5 sec, but yet have some misses beyond that, and
 % when simulating with many trials, the model will have no way to reproduce this gap.
 

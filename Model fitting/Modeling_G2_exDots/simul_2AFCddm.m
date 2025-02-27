@@ -3,7 +3,7 @@ function simdat = simul_2AFCddm(pmvar,pmfix,Sel,N,seed)
 % pm, and number of trials in each condition given by vector N (one number for each condition)
 % written for data of Janik Wiese's project 2022/23 - assumes 4 coherences of specific values and certain RT deadline 1.5 sec 
 
-maxRT = 1.5; % time beyond which no RTs are recorded by the task. (note here it's also the deadline subjects are aiming to meet; in other experiments these are different things - e.g. in Kelly et al 2021 deadline could be e.g. 380 ms but all RTs up to about 1.6 sec are still recorded and analysed maxR would be 1.6, not 0.38 in that case)
+maxRT = 2; % time beyond which no RTs are recorded by the task. (note here it's also the deadline subjects are aiming to meet; in other experiments these are different things - e.g. in Kelly et al 2021 deadline could be e.g. 380 ms but all RTs up to about 1.6 sec are still recorded and analysed maxR would be 1.6, not 0.38 in that case)
 cohlevels = [6 14 26 48];
 
 % The full parameter vector pm for this model is as follows:
