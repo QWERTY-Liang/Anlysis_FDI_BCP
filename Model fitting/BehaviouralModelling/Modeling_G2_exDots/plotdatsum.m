@@ -9,7 +9,8 @@ lw = [1 3]; % line widths - error thin and correct thick
 
 for ce=1:2 % error and correct
     for c=1:4
-        plot((datsum.q(1:end-1,ce,c)+datsum.q(2:end,ce,c))/2,cumsum(datsum.qp(:,ce,c)),'.-','Color',col(c,:),'LineWidth' ,lw(ce))% using the midpoint of the bins as the x-axis
+        % plot((datsum.q(1:end-1,ce,c)+datsum.q(2:end,ce,c))/2,cumsum(datsum.qp(:,ce,c)),'.-','Color',col(c,:),'LineWidth' ,lw(ce))% using the midpoint of the bins as the x-axis
+    plot((datsum.q(1:end-1,ce,c)+datsum.q(2:end,ce,c))/2,datsum.qp(:,ce,c),'.-','Color',col(c,:),'LineWidth' ,lw(ce))% using the midpoint of the bins as the x-axis
     end
 end
 % cohlevels = [6 14 26 48];

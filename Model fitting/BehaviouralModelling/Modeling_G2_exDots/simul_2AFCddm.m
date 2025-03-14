@@ -3,8 +3,8 @@ function simdat = simul_2AFCddm(pmvar,pmfix,Sel,N,seed)
 % pm, and number of trials in each condition given by vector N (one number for each condition)
 % written for data of Janik Wiese's project 2022/23 - assumes 4 coherences of specific values and certain RT deadline 1.5 sec 
 
-maxRT = 2.5; % time beyond which no RTs are recorded by the task. (note here it's also the deadline subjects are aiming to meet; in other experiments these are different things - e.g. in Kelly et al 2021 deadline could be e.g. 380 ms but all RTs up to about 1.6 sec are still recorded and analysed maxR would be 1.6, not 0.38 in that case)
-cohlevels = [5 10 5 10];
+maxRT = 2; % time beyond which no RTs are recorded by the task. (note here it's also the deadline subjects are aiming to meet; in other experiments these are different things - e.g. in Kelly et al 2021 deadline could be e.g. 380 ms but all RTs up to about 1.6 sec are still recorded and analysed maxR would be 1.6, not 0.38 in that case)
+cohlevels = [7 14 7 14];
 
 % The full parameter vector pm for this model is as follows:
 % tnd = nondecision time
@@ -25,10 +25,10 @@ pm(Sel==0) = pmfix;
 [tnd,d,b,y] = deal(pm(1),pm(2:5),pm(6),pm(7));
 
 % Now if only d(1) is designated as free, we will take that to mean the other drift rates scale directly from that:
-if all(Sel(2:5)==[1 0 0 0])
+if all(Sel(2:5)==[1 0 1 0])
     d(2)=cohlevels(2)/cohlevels(1)*d(1);
-    d(3)=cohlevels(3)/cohlevels(1)*d(1);
-    d(4)=cohlevels(4)/cohlevels(1)*d(1);
+    %d(3)=cohlevels(3)/cohlevels(1)*d(1);
+    d(4)=cohlevels(4)/cohlevels(3)*d(3);
 end
 % if N is just one number, assume that is the requested number of trials for each condition
 if length(N)==1, N = ones(1,4)*N; end
@@ -36,7 +36,7 @@ if length(N)==1, N = ones(1,4)*N; end
 rng(seed) % the reason a random number generator seed is fed in is because otherwise, since we are generating predicted data using monte carlo simualtion, even the same parameter vector will produce different predicted data and hence G^2 on different runs, which would surely trip up the search algorithm.
 
 s = 0.1 ; % gaussian noise /sec
-dt = 0.002; % time step in sec. Don't want too crude, but too fine and the computation time will be more than necessary.
+dt = 0.001; % time step in sec. Don't want too crude, but too fine and the computation time will be more than necessary.
 
 k=0; % trial counter
 for c=1:4 % condition
